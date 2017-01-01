@@ -55,8 +55,13 @@ namespace archivepp
             contents.resize(size);
 
             zip_file_t * entry_handle = ::zip_fopen_index(get_zip_handle(), get_index(), 0);
+            if (entry_handle != nullptr)
+            {
+                ::zip_fread(entry_handle, &contents[0], size);
+                ::zip_fclose(entry_handle);
+            }
         }
-        
+
         return contents;
     }
 

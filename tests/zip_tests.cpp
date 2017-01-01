@@ -24,7 +24,7 @@ TEST_CASE("archive_zip - get path")
 
 TEST_CASE("archive_zip - get number of entries")
 {
-    archivepp::string path("../../tests/zip/get_number_of_entries.zip");
+    archivepp::string path("../../tests/zip/archive.zip");
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -43,7 +43,7 @@ TEST_CASE("archive_zip - get number of entries")
 
 TEST_CASE("archive_zip - get entries")
 {
-    archivepp::string path("../../tests/zip/get_number_of_entries.zip");
+    archivepp::string path("../../tests/zip/archive.zip");
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -54,13 +54,26 @@ TEST_CASE("archive_zip - get entries")
 
 TEST_CASE("archive_entry_zip - get name")
 {
-    archivepp::string path("../../tests/zip/get_number_of_entries.zip");
+    archivepp::string path("../../tests/zip/archive.zip");
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
     auto entries = archive.get_entries();
     
-    REQUIRE(entries[0]->get_name() == "get_number_of_entries/");
-    REQUIRE(entries[2]->get_name() == "get_number_of_entries/2");
-    REQUIRE(entries[4]->get_name() == "get_number_of_entries/empty/");
+    REQUIRE(entries[0]->get_name() == "archive/");
+    REQUIRE(entries[2]->get_name() == "archive/2");
+    REQUIRE(entries[4]->get_name() == "archive/empty/");
+}
+
+TEST_CASE("archive_entry_zip - get contents")
+{
+    archivepp::string path("../../tests/zip/archive.zip");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    auto entries = archive.get_entries();
+
+    REQUIRE(entries[1]->get_contents() == "1");
+    REQUIRE(entries[2]->get_contents() == "2");
+    REQUIRE(entries[3]->get_contents() == "3");
 }
