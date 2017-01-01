@@ -16,6 +16,7 @@ namespace archivepp
         virtual ~archive_zip();
 
         virtual int64_t get_number_of_entries() const override;
+        virtual std::vector<entry_pointer> get_entries(filter_function filter_fn = nullptr) const override;
     protected:
     private:
         zip_t * m_zip;

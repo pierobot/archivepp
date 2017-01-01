@@ -1,5 +1,7 @@
 #include <archivepp/archive_entry_zip.hpp>
 
+#include <cstring>
+
 namespace archivepp
 {
     archive_entry_zip::archive_entry_zip(zip_t * handle,
@@ -19,6 +21,25 @@ namespace archivepp
     uint64_t archive_entry_zip::get_size() const
     {
         return m_zip_stat.valid & ZIP_STAT_SIZE ? m_zip_stat.size : 0;
+    }
+
+    archivepp::string archive_entry_zip::get_name() const
+    {
+        archivepp::string name;
+
+        if (m_zip_stat.valid & ZIP_STAT_NAME)
+        {
+            size_t length = std::strlen(&m_zip_stat.name[0]);
+
+#ifdef ARCHIVEPP_USE_WSTRING
+            name = to_utf16(std::string(&m_zip_stat.name[0], &m_zip_stat.name[length]));
+#else
+            name.reserve(length);
+            std::copy(&m_zip_stat.name[0], &m_zip_stat.name[length], std::back_inserter(name));
+#endif
+        }
+
+        return name;
     }
 
     std::string archive_entry_zip::get_contents() const

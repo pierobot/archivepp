@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
-
 #ifdef ARCHIVEPP_USE_WSTRING
 #   include <utf8.h>
 #endif
+
+#include <iterator>
+#include <string>
 
 namespace archivepp
 {
@@ -20,6 +21,15 @@ namespace archivepp
         std::string result;
 
         utf8::utf16to8(str.begin(), str.end(), std::back_inserter(result));
+
+        return result;
+    }
+
+    inline std::wstring to_utf16(std::string const & str)
+    {
+        std::wstring result;
+
+        utf8::utf8to16(str.begin(), str.end(), std::back_inserter(result));
 
         return result;
     }

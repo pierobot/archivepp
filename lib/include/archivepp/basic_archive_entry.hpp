@@ -12,7 +12,7 @@ namespace archivepp
 
         basic_archive_entry(native_handle_type handle, uint64_t index) :
             m_handle(handle),
-            m_index()
+            m_index(index)
         {
         }
 

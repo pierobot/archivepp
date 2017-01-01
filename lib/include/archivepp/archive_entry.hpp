@@ -15,7 +15,7 @@ namespace archivepp
 
         virtual uint64_t get_index() const = 0;
 
-        virtual archivepp::string const & get_name() const = 0;
+        virtual archivepp::string get_name() const = 0;
         
         virtual uint64_t get_size() const = 0;
     protected:
