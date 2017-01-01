@@ -1,6 +1,5 @@
 #include <archivepp/basic_archive_entry.hpp>
 
-#include <cstring>
 #include <system_error>
 
 #include <zip.h>
@@ -15,6 +14,8 @@ namespace archivepp
         virtual ~archive_entry_zip();
 
         virtual uint64_t get_size() const override;
+
+        virtual archivepp::string get_name() const;
 
         virtual std::string get_contents() const override;
     protected:

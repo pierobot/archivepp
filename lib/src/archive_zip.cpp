@@ -1,4 +1,5 @@
 #include <archivepp/archive_zip.hpp>
+#include <archivepp/archive_entry_zip.hpp>
 
 namespace archivepp
 {
@@ -35,5 +36,26 @@ namespace archivepp
     {
         // No need to check if m_zip is null as it will return -1 in that case
         return ::zip_get_num_entries(m_zip, 0);
+    }
+
+    auto archive_zip::get_entries(filter_function filter_fn) const -> std::vector<entry_pointer>
+    {
+        std::vector<entry_pointer> entries;
+
+        for (uint64_t i = 0; i < get_number_of_entries(); ++i)
+        {
+            std::error_code ec;
+            entry_pointer entry_ptr(new archive_entry_zip(m_zip, i, ec));
+            if (!ec)
+            {
+                if (filter_fn != nullptr)
+                    if (filter_fn(entry_ptr) == true)
+                        continue;
+
+                entries.emplace_back(std::move(entry_ptr));
+            }
+        }
+
+        return entries;
     }
 }
