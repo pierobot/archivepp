@@ -65,6 +65,19 @@ TEST_CASE("archive_entry_zip - get name")
     REQUIRE(entries[4]->get_name() == "archive/empty/");
 }
 
+TEST_CASE("archive_entry_zip - get size")
+{
+    archivepp::string path("../../tests/zip/archive.zip");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    auto entries = archive.get_entries();
+
+    REQUIRE(entries[1]->get_size() == 1);
+    REQUIRE(entries[2]->get_size() == 2);
+    REQUIRE(entries[3]->get_size() == 3);
+}
+
 TEST_CASE("archive_entry_zip - get contents")
 {
     archivepp::string path("../../tests/zip/archive.zip");
@@ -74,6 +87,6 @@ TEST_CASE("archive_entry_zip - get contents")
     auto entries = archive.get_entries();
 
     REQUIRE(entries[1]->get_contents() == "1");
-    REQUIRE(entries[2]->get_contents() == "2");
-    REQUIRE(entries[3]->get_contents() == "3");
+    REQUIRE(entries[2]->get_contents() == "22");
+    REQUIRE(entries[3]->get_contents() == "333");
 }

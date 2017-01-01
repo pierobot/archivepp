@@ -6,9 +6,17 @@ add_definitions(-DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
 
 set(ARCHIVEPP_LIBRARY ${CMAKE_SOURCE_DIR}/build/lib/libarchivepp.a)
 
+# Enable flags for code coverage
+set(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+set(GCC_COVERAGE_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+
 # --- ZIP ----
 add_executable(zip_tests zip_tests.cpp)
 target_link_libraries(zip_tests ${ARCHIVEPP_LIBRARY})
+target_link_libraries(zip_tests gcov)
 
 find_package(libzip REQUIRED)
 if (LIBZIP_FOUND)
