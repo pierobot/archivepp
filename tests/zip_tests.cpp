@@ -9,8 +9,6 @@ TEST_CASE("archive_zip - constructor on nonexistent file")
     archivepp::archive_zip archive(path, ec);
 
     REQUIRE(ec.value() == ZIP_ER_NOENT);
-
-    REQUIRE(archive.get_path() == path);
 }
 
 TEST_CASE("archive_zip - get path")
@@ -32,11 +30,11 @@ TEST_CASE("archive_zip - get number of entries")
 
     /*
         Entries:
-        get_number_of_entries (1)
-        - 1                   (2)
-        - 2                   (3)
-        - 3                   (4)
-        - empty               (5)
+        archive  (1)
+        - 1      (2)
+        - 2      (3)
+        - 3      (4)
+        - empty  (5)
     */
     REQUIRE(archive.get_number_of_entries() == 5);
 }
@@ -63,6 +61,27 @@ TEST_CASE("archive_entry_zip - get name")
     REQUIRE(entries[0]->get_name() == "archive/");
     REQUIRE(entries[2]->get_name() == "archive/2");
     REQUIRE(entries[4]->get_name() == "archive/empty/");
+}
+
+TEST_CASE("archive_entry_zip - get index")
+{
+    archivepp::string path("../../tests/zip/archive.zip");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    auto entries = archive.get_entries();
+
+    /*
+        Entries:
+        archive  (0)
+        - 1      (1)
+        - 2      (2)
+        - 3      (3)
+        - empty  (4)
+    */
+    REQUIRE(entries[1]->get_index() == 1);
+    REQUIRE(entries[2]->get_index() == 2);
+    REQUIRE(entries[3]->get_index() == 3);
 }
 
 TEST_CASE("archive_entry_zip - get size")
