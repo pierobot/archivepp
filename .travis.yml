@@ -12,11 +12,9 @@ addons:
             - cmake
             - cmake-data
             - zlib1g-dev
-
 install:
     - mkdir build && cd build
     - wget http://www.nih.at/libzip/libzip-1.1.3.tar.gz && tar -zxvf libzip-1.1.3.tar.gz && cd libzip-1.1.3 && cmake . && make && sudo make install && sudo cp zipconf.h /usr/local/include && cd ..
 script:
     - cmake ..
     - make && ctest -V
-
