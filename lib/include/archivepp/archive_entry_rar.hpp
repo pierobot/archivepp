@@ -1,0 +1,33 @@
+#pragma once
+
+#include <archivepp/basic_archive_entry.hpp>
+
+#include <system_error>
+
+#include <unrar/dll.hpp>
+
+#ifdef _MSC_VER
+#   include <Windows.h>
+#endif
+
+namespace archivepp
+{
+    class archive_entry_rar final : public basic_archive_entry
+    {
+    public:
+        
+        archive_entry_rar(native_handle_type handle, uint64_t index, archivepp::string name, uint64_t size, std::error_code & ec);
+        
+        virtual ~archive_entry_rar();
+
+        virtual std::string get_contents() const override;
+
+        virtual archivepp::string get_name() const override;
+
+        virtual uint64_t get_size() const override;
+    protected:
+    private:
+        archivepp::string m_name;
+        uint64_t m_size;
+    };
+}
