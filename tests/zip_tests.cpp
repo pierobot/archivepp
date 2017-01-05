@@ -105,7 +105,54 @@ TEST_CASE("archive_entry_zip - get contents")
 
     auto entries = archive.get_entries();
 
-    REQUIRE(entries[1]->get_contents() == "1");
-    REQUIRE(entries[2]->get_contents() == "22");
-    REQUIRE(entries[3]->get_contents() == "333");
+    std::string contents = entries[1]->get_contents(ec);
+    REQUIRE(ec.value() == 0);
+    REQUIRE(contents == "1");
+    
+    contents = entries[2]->get_contents(ec);
+    REQUIRE(ec.value() == 0);
+    REQUIRE(contents == "22");
+    
+    contents = entries[3]->get_contents(ec);
+    REQUIRE(ec.value() == 0);
+    REQUIRE(contents == "333");
 }
+
+TEST_CASE("archive_entry_zip - get encrypted contents without password")
+{
+    archivepp::string path("../../tests/zip/archive_encrypted.zip");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    auto entries = archive.get_entries();
+    
+    std::string contents = entries[1]->get_contents(ec);
+    REQUIRE(ec.value() == ZIP_ER_NOPASSWD);
+        
+    contents = entries[2]->get_contents(ec);
+    REQUIRE(ec.value() == ZIP_ER_NOPASSWD);
+        
+    contents = entries[3]->get_contents(ec);
+    REQUIRE(ec.value() == ZIP_ER_NOPASSWD);
+}
+
+// TEST_CASE("archive_entry_zip - get encrypted contents with password")
+// {
+//     archivepp::string path("../../tests/zip/archive_encrypted.zip");
+//     std::error_code ec;
+//     archivepp::archive_zip archive(path, ec);
+
+//     auto entries = archive.get_entries();
+
+//     std::string contents = entries[1]->get_contents(ec);
+//     REQUIRE(ec.value() == 0);
+//     REQUIRE(contents == "1");
+    
+//     contents = entries[2]->get_contents(ec);
+//     REQUIRE(ec.value() == 0);
+//     REQUIRE(contents == "22");
+    
+//     contents = entries[3]->get_contents(ec);
+//     REQUIRE(ec.value() == 0);
+//     REQUIRE(contents == "22");
+// }

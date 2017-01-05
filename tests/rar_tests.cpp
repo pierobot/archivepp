@@ -101,8 +101,11 @@ TEST_CASE("archive_entry_rar - get contents")
 
     auto entries = archive.get_entries();
 
-    REQUIRE(entries[1]->get_contents() == "1");
-    REQUIRE(entries[2]->get_contents() == "22");
-    REQUIRE(entries[3]->get_contents() == "333");
+    REQUIRE(entries[1]->get_contents(ec) == "1");
+    REQUIRE(ec.value() == 0);
+    REQUIRE(entries[2]->get_contents(ec) == "22");
+    REQUIRE(ec.value() == 0);
+    REQUIRE(entries[3]->get_contents(ec) == "333");
+    REQUIRE(ec.value() == 0);
 }
 */

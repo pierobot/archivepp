@@ -2,8 +2,6 @@
 
 #include <archivepp/basic_archive_entry.hpp>
 
-#include <system_error>
-
 #include <unrar/dll.hpp>
 
 #ifdef _MSC_VER
@@ -20,7 +18,7 @@ namespace archivepp
         
         virtual ~archive_entry_rar();
 
-        virtual std::string get_contents() const override;
+        virtual std::string get_contents(std::error_code & ec) const override;
 
         virtual archivepp::string get_name() const override;
 

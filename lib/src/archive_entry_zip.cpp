@@ -42,7 +42,7 @@ namespace archivepp
         return name;
     }
 
-    std::string archive_entry_zip::get_contents() const
+    std::string archive_entry_zip::get_contents(std::error_code & ec) const
     {
         std::string contents;
 
@@ -60,6 +60,10 @@ namespace archivepp
                 ::zip_fread(entry_handle, &contents[0], size);
                 ::zip_fclose(entry_handle);
             }
+            else
+            {
+                ec = get_last_error();
+            }
         }
 
         return contents;
@@ -70,7 +74,7 @@ namespace archivepp
         return static_cast<zip_t *>(get_handle());
     }
 
-    std::error_code archive_entry_zip::get_last_error()
+    std::error_code archive_entry_zip::get_last_error() const
     {
         if (get_zip_handle() == nullptr)
             throw std::runtime_error(std::string(__FUNCTION__) + "- Cannot dereference null zip_t pointer");
@@ -79,7 +83,7 @@ namespace archivepp
         zip_error_t * zerror = ::zip_get_error(get_zip_handle());
         if (zerror != nullptr)
         {
-            ec = std::error_code(::zip_error_code_system(zerror), std::system_category());
+            ec = std::error_code(::zip_error_code_zip(zerror), std::system_category());
         }
 
         return ec;

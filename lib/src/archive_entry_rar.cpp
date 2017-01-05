@@ -6,6 +6,11 @@
 
 namespace archivepp
 {
+    static inline std::error_code make_ec(int e)
+    {
+        return std::error_code(e, std::system_category());
+    }
+
     struct cb_context
     {
         std::string buffer;
@@ -67,7 +72,7 @@ namespace archivepp
     {
     }
 
-    std::string archive_entry_rar::get_contents() const
+    std::string archive_entry_rar::get_contents(std::error_code & ec) const
     {
         std::unique_ptr<cb_context> context_ptr(new cb_context());
         HANDLE handle = get_handle();
@@ -75,7 +80,9 @@ namespace archivepp
         ::RARSetCallback(handle, rar_callback, reinterpret_cast<LPARAM>(context_ptr.get()));
 
         RARHeaderDataEx header{};
-        for (uint64_t i = 0; ::RARReadHeaderEx(handle, &header) == ERAR_SUCCESS; ++i)
+        uint64_t i = 0;
+        ec = make_ec(::RARReadHeaderEx(handle, &header));
+        while (!ec)
         {
             // Is the current index == to this entry's?
             if (i != get_index())
@@ -86,6 +93,8 @@ namespace archivepp
 #else
                 ::RARProcessFile(handle, RAR_SKIP, nullptr, nullptr);
 #endif
+                ++i;
+                ec = make_ec(::RARReadHeaderEx(handle, &header));
                 continue;
             }
 

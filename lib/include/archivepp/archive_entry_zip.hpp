@@ -1,7 +1,5 @@
 #include <archivepp/basic_archive_entry.hpp>
 
-#include <system_error>
-
 #include <zip.h>
 
 namespace archivepp
@@ -17,12 +15,12 @@ namespace archivepp
 
         virtual archivepp::string get_name() const;
 
-        virtual std::string get_contents() const override;
+        virtual std::string get_contents(std::error_code & ec) const override;
     protected:
     private:
         zip_stat_t m_zip_stat;
 
         inline zip_t * get_zip_handle() const;
-        inline std::error_code get_last_error();
+        inline std::error_code get_last_error() const;
     };
 }
