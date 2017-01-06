@@ -1,60 +1,178 @@
 #include <archivepp/archive_zip.hpp>
 #include <archivepp/archive_entry_zip.hpp>
+#include <archivepp/except.hpp>
+
+#include <stdexcept>
+#include <utility>
 
 namespace archivepp
 {
-    archive_zip::archive_zip(archivepp::string path, std::error_code & ec) :
-        basic_archive(std::move(path))
+    namespace zip
     {
-        int error = ZIP_ER_OK;
+        static std::error_code get_last_error(zip_t * zip)
+        {
+            zip_error_t * zerror = ::zip_get_error(zip);
 
-        // libzip only takes a char* pointer for the path
-        // This presents a problem because we use std::wstring on Windows
-        // The solution to this is to encode our UTF-16 string to UTF-8 as libzip supports that
-#ifdef ARCHIVEPP_USE_WSTRING
-        m_zip = ::zip_open(to_utf8(get_path().c_str()), ZIP_RDONLY, &error);
-#else
-        m_zip = ::zip_open(get_path().c_str(), ZIP_RDONLY, &error);
-#endif
-        if (error == ZIP_ER_OK)
+            return std::error_code(::zip_error_code_zip(zerror), std::system_category());
+        }
+
+        static zip_t * open(archivepp::string const & path, std::error_code & ec)
         {
+            zip_t * zip = nullptr;
+            int error = ZIP_ER_OK;
+
+            // libzip only takes a char* pointer for the path
+            // This presents a problem because we use std::wstring on Windows
+            // The solution to this is to encode our UTF-16 string to UTF-8 as libzip supports that
+    #ifdef ARCHIVEPP_USE_WSTRING
+            zip = ::zip_open(to_utf8(path.c_str()), ZIP_RDONLY, &error);
+    #else
+            zip = ::zip_open(path.c_str(), ZIP_RDONLY, &error);
+    #endif
+            if (error == ZIP_ER_OK)
+            {
+                ec = std::error_code();
+            }
+            else
+            {
+                ec = std::error_code(error, std::system_category());
+            }
+
+            return zip;
+        }
+
+        static std::error_code close(zip_t * zip)
+        {
+            return std::error_code(::zip_close(zip), std::system_category());
+        }
+
+        static int64_t get_number_of_entries(zip_t * zip)
+        {
+            return ::zip_get_num_entries(zip, 0);
+        }
+
+        static std::pair<uint64_t, uint64_t> get_size_from_index(zip_t * zip, int64_t index, std::error_code & ec)
+        {        
+            zip_stat_t zstat {};
+            int result = ::zip_stat_index(zip, index, 0, &zstat);
+            if (result == -1)
+            {
+                ec = get_last_error(zip);
+                return std::make_pair(0, 0);
+            }
+
+            uint64_t original_size = 0;
+            uint64_t compressed_size = 0;
+            if (zstat.valid & ZIP_STAT_SIZE)
+                original_size = zstat.size;
+            if (zstat.valid & ZIP_STAT_COMP_SIZE)
+                compressed_size = zstat.comp_size;
+
             ec = std::error_code();
+            return std::make_pair(original_size, compressed_size);
         }
-        else
+
+        static zip_file_t * fopen_from_index(zip_t * zip, int64_t index, std::string const & password, std::error_code & ec)
         {
-            ec = std::error_code(error, std::generic_category());
+            zip_file_t * zfile = password.empty() == true ? ::zip_fopen_index(zip, index, 0) :
+                                                            ::zip_fopen_index_encrypted(zip, index, 0, password.c_str());
+
+            ec = zfile == nullptr ? get_last_error(zip) : std::error_code();
+            
+            return zfile;
         }
+
+        static zip_file_t * fopen_from_name(zip_t * zip, std::string const & name, std::string const & password, std::error_code & ec)
+        {
+            zip_file_t * zfile = password.empty() == true ? ::zip_fopen(zip, name.c_str(), 0) :
+                                                            ::zip_fopen_encrypted(zip, name.c_str(), 0, password.c_str());
+
+            ec = zfile == nullptr ? get_last_error(zip) : std::error_code();
+            
+            return zfile;
+        }
+
+        static std::error_code fclose(zip_file_t * file)
+        {
+            return std::error_code(::zip_fclose(file), std::system_category());
+        }
+
+        static std::string fread(zip_file_t * file, uint64_t size)
+        {
+            std::string contents;
+            contents.resize(size);
+
+            int result = ::zip_fread(file, &contents[0], size);
+            if (result == -1)
+            {
+                contents.clear();
+            }
+
+            return contents;
+        }
+    }
+
+    archive_zip::archive_zip(archivepp::string path, std::error_code & ec) :
+        basic_archive(std::move(path)),
+        m_zip(zip::open(get_path(), ec))
+    {
+    }
+
+    archive_zip::archive_zip(archivepp::string path, archivepp::string password, std::error_code & ec) :
+        basic_archive(std::move(path), std::move(password)),
+        m_zip(zip::open(get_path(), ec))
+    {
     }
 
     archive_zip::~archive_zip()
     {
-        if (m_zip != nullptr)
-            ::zip_close(m_zip);
+        zip::close(m_zip);
     }
         
     int64_t archive_zip::get_number_of_entries() const
     {
+        if (m_zip == nullptr)
+            throw archivepp::null_pointer_error("m_zip", __FUNCTION__);
         // No need to check if m_zip is null as it will return -1 in that case
-        return ::zip_get_num_entries(m_zip, 0);
+        return zip::get_number_of_entries(m_zip);
+    }
+
+    std::string archive_zip::get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const
+    {
+        if (entry == nullptr)
+            throw archivepp::null_argument_error("entry", __FUNCTION__);
+
+        // If the user supplies a password for this particular entry, then use it rather than the archive password
+        archivepp::string realpassword = password.empty() == false ? password : get_password();
+        zip_file_t * zfile = zip::fopen_from_index(m_zip, entry->get_index(), realpassword, ec);
+        if (ec)
+            return std::string();
+
+        auto size_pair = zip::get_size_from_index(m_zip, entry->get_index(), ec);
+        if (ec)
+            return std::string();
+
+        return zip::fread(zfile, size_pair.first);
     }
 
     auto archive_zip::get_entries(filter_function filter_fn) const -> std::vector<entry_pointer>
     {
         std::vector<entry_pointer> entries;
 
-        for (uint64_t i = 0; i < get_number_of_entries(); ++i)
-        {
-            std::error_code ec;
-            entry_pointer entry_ptr(new archive_entry_zip(m_zip, i, ec));
-            if (!ec)
-            {
-                if (filter_fn != nullptr)
-                    if (filter_fn(entry_ptr) == true)
-                        continue;
+        // for (uint64_t i = 0; i < get_number_of_entries(); ++i)
+        // {
+        //     std::error_code ec;
+        //     auto size_pair = zip::get_size_from_index(m_zip, i, ec);
+        //     entry_pointer entry_ptr(new archive_entry_zip(i, ec));
+        //     if (!ec)
+        //     {
+        //         if (filter_fn != nullptr)
+        //             if (filter_fn(entry_ptr) == true)
+        //                 continue;
 
-                entries.emplace_back(std::move(entry_ptr));
-            }
-        }
+        //         entries.emplace_back(std::move(entry_ptr));
+        //     }
+        // }
 
         return entries;
     }

@@ -14,18 +14,10 @@ namespace archivepp
     {
     public:
         
-        archive_entry_rar(native_handle_type handle, uint64_t index, archivepp::string name, uint64_t size, std::error_code & ec);
+        archive_entry_rar(archivepp::string name, uint64_t index, uint64_t size, std::error_code & ec);
         
         virtual ~archive_entry_rar();
-
-        virtual std::string get_contents(std::error_code & ec) const override;
-
-        virtual archivepp::string get_name() const override;
-
-        virtual uint64_t get_size() const override;
     protected:
     private:
-        archivepp::string m_name;
-        uint64_t m_size;
     };
 }
