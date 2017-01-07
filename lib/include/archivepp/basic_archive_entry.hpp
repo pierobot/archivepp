@@ -8,11 +8,11 @@ namespace archivepp
     class basic_archive_entry : public archive_entry
     {
     public:
-        typedef void * native_handle_type;
-
-        basic_archive_entry(native_handle_type handle, uint64_t index) :
-            m_handle(handle),
-            m_index(index)
+        basic_archive_entry(archivepp::string name, uint64_t index, uint64_t uncompressed_size, uint64_t compressed_size) :
+            m_name(std::move(name)),
+            m_index(index),
+            m_uncompressed_size(uncompressed_size),
+            m_compressed_size(compressed_size)
         {
         }
 
@@ -20,18 +20,30 @@ namespace archivepp
         {
         }
 
-        virtual uint64_t get_index() const
+        virtual archivepp::string const & get_name() const override final
+        {
+            return m_name;
+        }
+
+        virtual uint64_t get_index() const override final
         {
             return m_index;
         }
 
-        native_handle_type get_handle() const
+        virtual uint64_t get_uncompressed_size() const override final
         {
-            return m_handle;
+            return m_uncompressed_size;
+        }
+
+        virtual uint64_t get_compressed_size() const override final
+        {
+            return m_compressed_size;
         }
     protected:
     private:
-        native_handle_type m_handle;
+        archivepp::string m_name;
         uint64_t m_index;
+        uint64_t m_uncompressed_size;
+        uint64_t m_compressed_size;
     };
 }

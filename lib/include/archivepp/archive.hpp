@@ -19,8 +19,11 @@ namespace archivepp
         virtual ~archive() {}
 
         virtual archivepp::string const & get_path() const = 0;
+        virtual archivepp::string const & get_password() const = 0;
         
         virtual int64_t get_number_of_entries() const = 0;
+
+        virtual std::string get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const = 0;
 
         virtual std::vector<entry_pointer> get_entries(filter_function filter_fn) const = 0;
     protected:
