@@ -14,7 +14,7 @@ namespace archivepp
     {
     public:
         
-        archive_entry_rar(archivepp::string name, uint64_t index, uint64_t size, std::error_code & ec);
+        archive_entry_rar(archivepp::string name, uint64_t index, uint64_t uncompressed_size, uint64_t compressed_size, std::error_code & ec);
         
         virtual ~archive_entry_rar();
     protected:

@@ -49,35 +49,22 @@ namespace archivepp
             return count;
         }
 
-        static std::pair<uint64_t, uint64_t> get_size_from_index(HANDLE handle, int64_t index, std::error_code & ec)
+        static std::pair<uint64_t, uint64_t> get_size_from_header(RARHeaderDataEx & header)
         {
-            if (handle == nullptr || index == -1)
-                return std::make_pair(0, 0);
-
-            RARHeaderDataEx header {};
-            int64_t count = 0;
-            ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
-            while (!ec)
-            {
-                ::RARProcessFile(handle, RAR_SKIP, NULL, NULL);
-
-                if (count == index)
-                    break;
-
-                ++count;
-                ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
-            }
-
-            // Expected error
-            ec = ec.value() == ERAR_END_ARCHIVE ? std::error_code() : ec;
-            if (ec)
-                return std::make_pair(0, 0);
-
             // Initialize the size values with their upper and lower 32 bits
             int64_t unpacked_size = (static_cast<int64_t>(header.UnpSizeHigh) << 32) | header.UnpSize;
             int64_t packed_size = (static_cast<int64_t>(header.PackSizeHigh) << 32) | header.PackSize;
 
             return std::make_pair(unpacked_size, packed_size);
+        }
+
+        static archivepp::string get_name_from_header(RARHeaderDataEx const & header)
+        {
+#ifdef ARCHIVEPP_USE_WSTRING
+            return archivepp::string(&header.FileNameW[0]);
+#else
+            return archivepp::string(&header.FileName[0]);
+#endif
         }
     }
 
@@ -118,25 +105,29 @@ namespace archivepp
     {
         std::vector<entry_pointer> entries;
 
-//         if (m_rar == nullptr)
-//             throw std::runtime_error("Cannot access m_rar because it is null.");
+        if (m_handle == nullptr)
+            throw archivepp::null_pointer_error("m_handle", __FUNCTION__);
 
-//         RARHeaderDataEx header {};
-//         int64_t index = 0;
-//         while (::RARReadHeaderEx(m_rar, &header) == ERAR_SUCCESS)
-//         {
-//             ::RARProcessFile(m_rar, RAR_SKIP, NULL, NULL);
-//             ++index;
+        RARHeaderDataEx header {};
+        uint64_t index = 0;
 
-//             std::error_code ec;
-// #ifdef ARCHIVEPP_USE_WSTRING
-//             entry_pointer entry_ptr(new archive_entry_rar(m_rar, index, &header.FileNameW[0], header.UnpSize, ec));
-// #else
-//             entry_pointer entry_ptr(new archive_entry_rar(m_rar, index, &header.FileName[0], header.UnpSize, ec));
-// #endif
-//             if (!ec && entry_ptr != nullptr)
-//                 entries.emplace_back(std::move(entry_ptr));
-//         }
+        while (::RARReadHeaderEx(m_handle, &header) == ERAR_SUCCESS)
+        {
+            std::error_code ec;
+            archivepp::string name = unrar::get_name_from_header(header);
+            auto size_pair = unrar::get_size_from_header(header);
+            entry_pointer entry_ptr(new archive_entry_rar(name, index, size_pair.first, size_pair.second, ec));
+            
+            if(!ec)
+            {
+                bool skip = filter_fn != nullptr ? filter_fn(entry_ptr) : false;
+                if (skip == false)
+                    entries.emplace_back(std::move(entry_ptr));
+            }
+
+            ::RARProcessFile(m_handle, RAR_SKIP, nullptr, nullptr);
+            ++index;
+        }
 
         return entries;
     }

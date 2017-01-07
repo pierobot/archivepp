@@ -42,16 +42,18 @@ TEST_CASE("archive_rar - get number of entries on nonexistent file throws")
     CHECK_THROWS_AS(archive.get_number_of_entries(), archivepp::null_pointer_error);
 }
 
-// TEST_CASE("archive_rar - get entries")
-// {
-//     archivepp::string path("../../tests/rar/archive.rar");
-//     std::error_code ec;
-//     archivepp::archive_rar archive(path, nopassword, ec);
+TEST_CASE("archive_rar - get entries")
+{
+    archivepp::string path("../../tests/rar/archive.rar");
+    std::error_code ec;
+    archivepp::archive_rar archive(path, nopassword, ec);
 
-//     auto entries = archive.get_entries();
+    REQUIRE(ec.value() == 0);
+
+    auto entries = archive.get_entries();
     
-//     REQUIRE(entries.size() == 5);
-// }
+    REQUIRE(entries.size() == 5);
+}
 
 /*
 
