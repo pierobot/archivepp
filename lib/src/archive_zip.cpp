@@ -2,6 +2,7 @@
 #include <archivepp/archive_entry_zip.hpp>
 #include <archivepp/except.hpp>
 
+#include <cstring>
 #include <stdexcept>
 #include <utility>
 
@@ -110,6 +111,34 @@ namespace archivepp
 
             return contents;
         }
+
+        static archivepp::string get_filename_from_index(zip_t * zip, uint64_t index, std::error_code & ec)
+        {
+            zip_stat_t zstat {};
+            int result = ::zip_stat_index(zip, index, 0, &zstat);
+            if (result == -1)
+            {
+                ec = get_last_error(zip);
+                return archivepp::string();
+            }
+
+            archivepp::string name;
+            if (zstat.valid & ZIP_STAT_NAME)
+            {
+                size_t length = std::strlen(&zstat.name[0]);
+
+#ifdef ARCHIVEPP_USE_WSTRING
+                name = to_utf16(std::string(&zstat.name[0], &zstat.name[length]));
+ #else
+                name.reserve(length);
+                std::copy(&zstat.name[0], &zstat.name[length], std::back_inserter(name));
+ #endif
+            }
+
+            ec = std::error_code();
+
+            return name;
+        }
     }
 
     archive_zip::archive_zip(archivepp::string path, std::error_code & ec) :
@@ -139,40 +168,47 @@ namespace archivepp
 
     std::string archive_zip::get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const
     {
-        if (entry == nullptr)
-            throw archivepp::null_argument_error("entry", __FUNCTION__);
+        // if (entry == nullptr)
+        //     throw archivepp::null_argument_error("entry", __FUNCTION__);
 
-        // If the user supplies a password for this particular entry, then use it rather than the archive password
-        archivepp::string realpassword = password.empty() == false ? password : get_password();
-        zip_file_t * zfile = zip::fopen_from_index(m_zip, entry->get_index(), realpassword, ec);
-        if (ec)
-            return std::string();
+        // // If the user supplies a password for this particular entry, then use it rather than the archive password
+        // archivepp::string realpassword = password.empty() == false ? password : get_password();
+        // zip_file_t * zfile = zip::fopen_from_index(m_zip, entry->get_index(), realpassword, ec);
+        // if (ec)
+        //     return std::string();
 
-        auto size_pair = zip::get_size_from_index(m_zip, entry->get_index(), ec);
-        if (ec)
-            return std::string();
+        // auto size_pair = zip::get_size_from_index(m_zip, entry->get_index(), ec);
+        // if (ec)
+        //     return std::string();
 
-        return zip::fread(zfile, size_pair.first);
+        // return zip::fread(zfile, size_pair.first);
+
+        return std::string();
     }
 
     auto archive_zip::get_entries(filter_function filter_fn) const -> std::vector<entry_pointer>
     {
         std::vector<entry_pointer> entries;
 
-        // for (uint64_t i = 0; i < get_number_of_entries(); ++i)
-        // {
-        //     std::error_code ec;
-        //     auto size_pair = zip::get_size_from_index(m_zip, i, ec);
-        //     entry_pointer entry_ptr(new archive_entry_zip(i, ec));
-        //     if (!ec)
-        //     {
-        //         if (filter_fn != nullptr)
-        //             if (filter_fn(entry_ptr) == true)
-        //                 continue;
+        for (uint64_t i = 0; i < get_number_of_entries(); ++i)
+        {
+            std::error_code ec;
+            auto size_pair = zip::get_size_from_index(m_zip, i, ec);
+            if (ec)
+                continue;
 
-        //         entries.emplace_back(std::move(entry_ptr));
-        //     }
-        // }
+            archivepp::string name = zip::get_filename_from_index(m_zip, i, ec);
+            if (ec)
+                continue;
+
+            entry_pointer entry_ptr(new archive_entry_zip(name, i, size_pair.first, size_pair.second, ec));
+            if (!ec)
+            {
+                bool skip = filter_fn != nullptr ? filter_fn(entry_ptr) : false;
+                if (skip == false)
+                    entries.emplace_back(std::move(entry_ptr));
+            }
+        }
 
         return entries;
     }
