@@ -9,7 +9,14 @@ namespace archivepp
     {
     public:
         basic_archive(archivepp::string path) :
-            m_path(std::move(path))
+            m_path(std::move(path)),
+            m_password()
+        {
+        }
+
+        basic_archive(archivepp::string path, archivepp::string password) :
+            m_path(std::move(path)),
+            m_password(std::move(password))
         {
         }
 
@@ -20,14 +27,13 @@ namespace archivepp
             return m_path;
         }
 
-        virtual int64_t get_number_of_entries() const
+        virtual archivepp::string const & get_password() const override final
         {
-            throw archivepp::notimplemented_error();
-            // Just to ignore warnings
-            return 0;
+            return m_password;
         }
     protected:       
     private:
-        archivepp::string const m_path;
+        archivepp::string m_path;
+        archivepp::string m_password;
     };
 }

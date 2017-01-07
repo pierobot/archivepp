@@ -1,7 +1,5 @@
 #include <archivepp/basic_archive_entry.hpp>
 
-#include <system_error>
-
 #include <zip.h>
 
 namespace archivepp
@@ -9,20 +7,11 @@ namespace archivepp
     class archive_entry_zip final : public basic_archive_entry
     {
     public:
-        archive_entry_zip(zip_t * handle, uint64_t index, std::error_code & ec);
+        archive_entry_zip(archivepp::string name, uint64_t index, uint64_t uncompressed_size, uint64_t compressed_size, std::error_code & ec);
 
         virtual ~archive_entry_zip();
-
-        virtual uint64_t get_size() const override;
-
-        virtual archivepp::string get_name() const;
-
-        virtual std::string get_contents() const override;
     protected:
     private:
         zip_stat_t m_zip_stat;
-
-        inline zip_t * get_zip_handle() const;
-        inline std::error_code get_last_error();
     };
 }
