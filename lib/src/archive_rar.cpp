@@ -168,7 +168,11 @@ namespace archivepp
                 throw archivepp::null_pointer_error("context_ptr", __FUNCTION__);
             
             context_ptr->password = password;
-            
+#ifdef ARCHIVEPP_USE_WSTRING
+            ::RARSetPassword(handle, const_cast<char*>(to_utf8(password).c_str()));
+#else
+            ::RARSetPassword(handle, const_cast<char*>(password.c_str()));
+#endif
             ::RARSetCallback(handle, unrar::callback, reinterpret_cast<LPARAM>(context_ptr.get()));
 
             ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
@@ -216,7 +220,12 @@ namespace archivepp
         return unrar::get_number_of_entries(get_path(), ec);
     }
 
-    std::string archive_rar::get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const
+    std::string archive_rar::get_contents(entry_pointer const & entry, std::error_code & ec) const
+    {
+        return get_contents(entry, "", ec);
+    }
+
+    std::string archive_rar::get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const
     {
         if (entry == nullptr)
             throw archivepp::null_argument_error("entry", __FUNCTION__);
@@ -224,9 +233,19 @@ namespace archivepp
         return get_contents(entry->get_index(), password, ec);
     }
 
+    std::string archive_rar::get_contents(uint64_t index, std::error_code & ec) const
+    {
+        return get_contents(index, "", ec);
+    }
+
     std::string archive_rar::get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const
     {
         return std::string();
+    }
+
+    std::string archive_rar::get_contents(archivepp::string const & name, std::error_code & ec) const
+    {
+        return get_contents(name, "", ec);
     }
 
     std::string archive_rar::get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const

@@ -17,8 +17,11 @@ namespace archivepp
 
         virtual int64_t get_number_of_entries() const override;
 
-        virtual std::string get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const override;
+        virtual std::string get_contents(entry_pointer const & entry, std::error_code & ec) const override;
+        virtual std::string get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const override;
+        virtual std::string get_contents(uint64_t index, std::error_code & ec) const override;
         virtual std::string get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const override;
+        virtual std::string get_contents(archivepp::string const & name, std::error_code & ec) const override;
         virtual std::string get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const override;
 
         virtual std::vector<entry_pointer> get_entries(filter_function filter_fn = nullptr) const override;
