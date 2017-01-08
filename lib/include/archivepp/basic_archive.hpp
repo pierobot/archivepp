@@ -26,12 +26,11 @@ namespace archivepp
         {
             return m_path;
         }
-
+    protected:
         virtual archivepp::string const & get_password() const override final
         {
             return m_password;
         }
-    protected:       
     private:
         archivepp::string m_path;
         archivepp::string m_password;
