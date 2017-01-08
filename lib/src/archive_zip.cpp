@@ -123,6 +123,8 @@ namespace archivepp
             }
 
             archivepp::string name;
+
+            // libzip provides a function called zip_name_locate, but doing the below will save us an allocation.
             if (zstat.valid & ZIP_STAT_NAME)
             {
                 size_t length = std::strlen(&zstat.name[0]);
@@ -138,6 +140,14 @@ namespace archivepp
             ec = std::error_code();
 
             return name;
+        }
+
+        static int64_t get_index_from_filename(zip_t * zip, std::string const & name, std::error_code & ec)
+        {
+            int64_t result = ::zip_name_locate(zip, name.c_str(), 0);
+            ec = result == -1 ? get_last_error(zip) : std::error_code();
+
+            return result;
         }
     }
 
@@ -168,22 +178,50 @@ namespace archivepp
 
     std::string archive_zip::get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const
     {
-        // if (entry == nullptr)
-        //     throw archivepp::null_argument_error("entry", __FUNCTION__);
+        if (entry == nullptr)
+            throw archivepp::null_argument_error("entry", __FUNCTION__);
 
-        // // If the user supplies a password for this particular entry, then use it rather than the archive password
-        // archivepp::string realpassword = password.empty() == false ? password : get_password();
-        // zip_file_t * zfile = zip::fopen_from_index(m_zip, entry->get_index(), realpassword, ec);
-        // if (ec)
-        //     return std::string();
+        return get_contents(entry->get_index(), password, ec);
+    }
 
-        // auto size_pair = zip::get_size_from_index(m_zip, entry->get_index(), ec);
-        // if (ec)
-        //     return std::string();
+    std::string archive_zip::get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const
+    {
+        // If the user supplies a password for this particular entry, then use it rather than the archive password
+        archivepp::string realpassword = password.empty() == false ? password : get_password();
+        zip_file_t * zfile = zip::fopen_from_index(m_zip, index, realpassword, ec);
+        if (ec)
+            return std::string();
 
-        // return zip::fread(zfile, size_pair.first);
+        auto size_pair = zip::get_size_from_index(m_zip, index, ec);
+        if (ec)
+            return std::string();
 
-        return std::string();
+        return zip::fread(zfile, size_pair.first);
+    }
+
+    std::string archive_zip::get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const
+    {
+        // If the user supplies a password for this particular entry, then use it rather than the archive password
+        archivepp::string realpassword = password.empty() == false ? password : get_password();
+
+#ifdef ARCHIVEPP_USE_WSTRING
+        std::string utf8name = to_utf8(name);
+        zip_file_t * zfile = zip::fopen_from_name(m_zip, utf8name, realpassword, ec);
+#else
+        zip_file_t * zfile = zip::fopen_from_name(m_zip, name, realpassword, ec);
+#endif
+        if (ec)
+            return std::string();
+
+        int64_t index = zip::get_index_from_filename(m_zip, name, ec);
+        if (ec)
+            return std::string();
+
+        auto size_pair = zip::get_size_from_index(m_zip, index, ec);
+        if (ec)
+            return std::string();
+
+        return zip::fread(zfile, size_pair.first);
     }
 
     auto archive_zip::get_entries(filter_function filter_fn) const -> std::vector<entry_pointer>
