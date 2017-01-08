@@ -27,7 +27,5 @@ namespace archivepp
         virtual std::vector<entry_pointer> get_entries(filter_function filter_fn = nullptr) const override;
     protected:
     private:
-        RAROpenArchiveDataEx m_arc_data;
-        HANDLE m_handle;
     };
 }
