@@ -176,12 +176,22 @@ namespace archivepp
         return zip::get_number_of_entries(m_zip);
     }
 
-    std::string archive_zip::get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const
+    std::string archive_zip::get_contents(entry_pointer const & entry, std::error_code & ec) const
+    {
+        return get_contents(entry, "", ec);
+    }
+
+    std::string archive_zip::get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const
     {
         if (entry == nullptr)
             throw archivepp::null_argument_error("entry", __FUNCTION__);
 
         return get_contents(entry->get_index(), password, ec);
+    }
+
+    std::string archive_zip::get_contents(uint64_t index, std::error_code & ec) const
+    {
+        return get_contents(index, "", ec);
     }
 
     std::string archive_zip::get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const
@@ -197,6 +207,11 @@ namespace archivepp
             return std::string();
 
         return zip::fread(zfile, size_pair.first);
+    }
+
+    std::string archive_zip::get_contents(archivepp::string const & name, std::error_code & ec) const
+    {
+        return get_contents(name, "", ec);
     }
 
     std::string archive_zip::get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const
