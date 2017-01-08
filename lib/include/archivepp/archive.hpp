@@ -39,12 +39,26 @@ namespace archivepp
          * Gets the contents of an entry in the archive.
          *
          * @param entry A smart pointer to an archive entry.
+         * @param ec An object that will hold any errors.
+         */
+        virtual std::string get_contents(entry_pointer const & entry, std::error_code & ec) const = 0;
+
+                /**
+         * Gets the contents of an entry in the archive.
+         *
+         * @param entry A smart pointer to an archive entry.
          * @param password The password for the entry.
          * @param ec An object that will hold any errors.
-         *
-         * @notes The password can be left empty.
          */
-        virtual std::string get_contents(entry_pointer entry, archivepp::string const & password, std::error_code & ec) const = 0;
+        virtual std::string get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const = 0;
+
+        /**
+         * Gets the contents of an entry in the archive.
+         *
+         * @param index The index of an archive entry.
+         * @param ec An object that will hold any errors.
+         */
+        virtual std::string get_contents(uint64_t index, std::error_code & ec) const = 0;
 
         /**
          * Gets the contents of an entry in the archive.
@@ -52,8 +66,6 @@ namespace archivepp
          * @param index The index of an archive entry.
          * @param password The password for the entry.
          * @param ec An object that will hold any errors.
-         *
-         * @notes The password can be left empty.
          */
         virtual std::string get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const = 0;
 
@@ -61,10 +73,16 @@ namespace archivepp
          * Gets the contents of an entry in the archive.
          *
          * @param name The name of an archive entry.
+         * @param ec An object that will hold any errors.
+         */
+        virtual std::string get_contents(archivepp::string const & name, std::error_code & ec) const = 0;
+
+        /**
+         * Gets the contents of an entry in the archive.
+         *
+         * @param name The name of an archive entry.
          * @param password The password for the entry.
          * @param ec An object that will hold any errors.
-         *
-         * @notes The password can be left empty.
          */
         virtual std::string get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const = 0;
 
