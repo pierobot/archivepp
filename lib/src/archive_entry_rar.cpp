@@ -1,10 +1,5 @@
 #include <archivepp/archive_entry_rar.hpp>
 
-#include <cmath>
-#include <cstring>
-#include <iterator>
-#include <memory>
-
 namespace archivepp
 {
 //     static inline std::error_code make_ec(int e)

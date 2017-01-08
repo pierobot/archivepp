@@ -55,71 +55,27 @@ TEST_CASE("archive_rar - get entries")
     REQUIRE(entries.size() == 5);
 }
 
-/*
-
-TEST_CASE("archive_entry_rar - get name")
+TEST_CASE("archive_rar - get contents by name")
 {
     archivepp::string path("../../tests/rar/archive.rar");
     std::error_code ec;
-    archivepp::archive_rar archive(path, ec);
+    archivepp::archive_rar archive(path, nopassword, ec);
 
     REQUIRE(ec.value() == 0);
 
-    auto entries = archive.get_entries();
-    
-    REQUIRE(entries[0]->get_name() == "archive/3");
-    REQUIRE(entries[2]->get_name() == "archive/2");
-    REQUIRE(entries[4]->get_name() == "archive/empty/");
+    std::string contents = archive.get_contents("archive/2", nopassword, ec);
+    REQUIRE(ec.value() == 0);
+    REQUIRE(contents == "22");
+
+    contents = archive.get_contents("archive/1", nopassword, ec);
+    REQUIRE(ec.value() == 0);
+    REQUIRE(contents == "1");
+
+    contents = archive.get_contents("archive/3", nopassword, ec);
+    REQUIRE(ec.value() == 0);
+    REQUIRE(contents == "333");
 }
 
-TEST_CASE("archive_entry_rar - get index")
-{
-    archivepp::string path("../../tests/rar/archive.rar");
-    std::error_code ec;
-    archivepp::archive_rar archive(path, ec);
-
-    REQUIRE(ec.value() == 0);
-
-    auto entries = archive.get_entries();
-
-    REQUIRE(entries[1]->get_index() == 1);
-    REQUIRE(entries[2]->get_index() == 2);
-    REQUIRE(entries[3]->get_index() == 3);
-}
-
-TEST_CASE("archive_entry_rar - get size")
-{
-    archivepp::string path("../../tests/rar/archive.rar");
-    std::error_code ec;
-    archivepp::archive_rar archive(path, ec);
-
-    REQUIRE(ec.value() == 0);
-
-    auto entries = archive.get_entries();
-
-    REQUIRE(entries[1]->get_size() == 1);
-    REQUIRE(entries[2]->get_size() == 2);
-    REQUIRE(entries[3]->get_size() == 3);
-}
-
-TEST_CASE("archive_entry_rar - get contents")
-{
-    archivepp::string path("../../tests/rar/archive.rar");
-    std::error_code ec;
-    archivepp::archive_rar archive(path, ec);
-
-    REQUIRE(ec.value() == 0);
-
-    auto entries = archive.get_entries();
-
-    REQUIRE(entries[1]->get_contents(ec) == "1");
-    REQUIRE(ec.value() == 0);
-    REQUIRE(entries[2]->get_contents(ec) == "22");
-    REQUIRE(ec.value() == 0);
-    REQUIRE(entries[3]->get_contents(ec) == "333");
-    REQUIRE(ec.value() == 0);
-}
-*/
 
 // TEST_CASE("archive_entry_rar - get encrypted contents without password")
 // {

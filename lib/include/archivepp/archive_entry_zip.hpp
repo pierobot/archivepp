@@ -1,3 +1,5 @@
+#pragma once
+
 #include <archivepp/basic_archive_entry.hpp>
 
 #include <zip.h>
