@@ -196,22 +196,23 @@ namespace archivepp
     }
 
     archive_rar::archive_rar(archivepp::string path, std::error_code & ec) :
-        basic_archive(std::move(path)),
-        m_arc_data(),
-        m_handle(unrar::open(get_path(), m_arc_data, ec))
+        basic_archive(std::move(path))
     {
+        RAROpenArchiveDataEx data {};
+        HANDLE handle = unrar::open(get_path(), data, ec);
+        unrar::close(handle);
     }
 
     archive_rar::archive_rar(archivepp::string path, archivepp::string password, std::error_code & ec) :
-        basic_archive(std::move(path), std::move(password)),
-        m_arc_data(),
-        m_handle(unrar::open(get_path(), m_arc_data, ec))
+        basic_archive(std::move(path), std::move(password))
     {
+        RAROpenArchiveDataEx data {};
+        HANDLE handle = unrar::open(get_path(), data, ec);
+        unrar::close(handle);
     }
 
     archive_rar::~archive_rar()
     {
-        unrar::close(m_handle);
     }
 
     int64_t archive_rar::get_number_of_entries() const
@@ -258,13 +259,16 @@ namespace archivepp
     {
         std::vector<entry_pointer> entries;
 
-        if (m_handle == nullptr)
-            throw archivepp::null_pointer_error("m_handle", __FUNCTION__);
+        RAROpenArchiveDataEx data {};
+        std::error_code ec;
+        HANDLE handle = unrar::open(get_path(), data, ec);
+        if (handle == nullptr)
+            throw archivepp::null_pointer_error("handle", __FUNCTION__);
 
         RARHeaderDataEx header {};
         uint64_t index = 0;
 
-        while (::RARReadHeaderEx(m_handle, &header) == ERAR_SUCCESS)
+        while (::RARReadHeaderEx(handle, &header) == ERAR_SUCCESS)
         {
             std::error_code ec;
             archivepp::string name = unrar::get_name_from_header(header);
@@ -278,9 +282,11 @@ namespace archivepp
                     entries.emplace_back(std::move(entry_ptr));
             }
 
-            ::RARProcessFile(m_handle, RAR_SKIP, nullptr, nullptr);
+            ::RARProcessFile(handle, RAR_SKIP, nullptr, nullptr);
             ++index;
         }
+
+        unrar::close(handle);
 
         return entries;
     }
