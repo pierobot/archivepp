@@ -178,7 +178,10 @@ namespace archivepp
 
     std::string archive_zip::get_contents(entry_pointer const & entry, std::error_code & ec) const
     {
-        return get_contents(entry, "", ec);
+        if (entry == nullptr)
+            throw archivepp::null_argument_error("entry", __FUNCTION__);
+
+        return get_contents(entry->get_index(), ec);
     }
 
     std::string archive_zip::get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const
