@@ -213,7 +213,7 @@ namespace archivepp
             ::RARSetCallback(handle, unrar::callback, reinterpret_cast<LPARAM>(context_ptr.get()));
 
             ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
-            int64_t current_index = 0;
+            uint64_t current_index = 0;
             while (ec.value() == ERAR_SUCCESS)
             {
                 if (current_index == index)
