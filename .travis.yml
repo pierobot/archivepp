@@ -11,6 +11,7 @@ addons:
             - build-essential
             - cmake
             - cmake-data
+            - lcov
             - zlib1g-dev
 install:
     - mkdir build && cd build
@@ -25,5 +26,9 @@ install:
     - make lib && sudo make install-lib
     - sudo mkdir /usr/local/include/unrar && sudo cp dll.hpp /usr/local/include/unrar && cd ..
 script:
-    - cmake ..
-    - make && ctest -V
+    - cmake -DENABLE_COVERAGE=ON ..
+    - make
+    - make archivepp_coverage
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
