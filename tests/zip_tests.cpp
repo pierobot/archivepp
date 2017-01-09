@@ -218,3 +218,12 @@ TEST_CASE("archive_zip - get contents to invalid entry_pointer throws")
     archivepp::archive::entry_pointer entry_ptr(nullptr);
     CHECK_THROWS_AS(archive.get_contents(entry_ptr, ec), archivepp::null_argument_error);   
 }
+
+TEST_CASE("archive_zip - get entries to nonexistent file throws")
+{
+    archivepp::string path("../../doesnotexist");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    CHECK_THROWS_AS(archive.get_entries(), archivepp::null_pointer_error);
+}

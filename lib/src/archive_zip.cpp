@@ -258,6 +258,9 @@ namespace archivepp
     {
         std::vector<entry_pointer> entries;
 
+        if (m_zip == nullptr)
+            throw archivepp::null_pointer_error("m_zip", __FUNCTION__);
+
         for (int64_t i = 0; i < get_number_of_entries(); ++i)
         {
             std::error_code ec;
