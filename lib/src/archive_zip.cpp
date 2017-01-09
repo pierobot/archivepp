@@ -196,17 +196,23 @@ namespace archivepp
 
     std::string archive_zip::get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const
     {
+        std::string contents;
+
         // If the user supplies a password for this particular entry, then use it rather than the archive password
         archivepp::string realpassword = password.empty() == false ? password : get_password();
         zip_file_t * zfile = zip::fopen_from_index(m_zip, index, realpassword, ec);
-        if (ec)
-            return std::string();
+        if (!ec)
+        {
+            auto size_pair = zip::get_size_from_index(m_zip, index, ec);
+            if (!ec)
+            {
+                contents =  zip::fread(zfile, size_pair.first);
+            }
 
-        auto size_pair = zip::get_size_from_index(m_zip, index, ec);
-        if (ec)
-            return std::string();
+            zip::fclose(zfile);
+        }
 
-        return zip::fread(zfile, size_pair.first);
+        return contents;
     }
 
     std::string archive_zip::get_contents(archivepp::string const & name, std::error_code & ec) const
@@ -216,6 +222,8 @@ namespace archivepp
 
     std::string archive_zip::get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const
     {
+        std::string contents;
+
         // If the user supplies a password for this particular entry, then use it rather than the archive password
         archivepp::string realpassword = password.empty() == false ? password : get_password();
 
@@ -225,25 +233,29 @@ namespace archivepp
 #else
         zip_file_t * zfile = zip::fopen_from_name(m_zip, name, realpassword, ec);
 #endif
-        if (ec)
-            return std::string();
+        if (!ec)
+        {
+            int64_t index = zip::get_index_from_filename(m_zip, name, ec);
+            if (!ec)
+            {
+                auto size_pair = zip::get_size_from_index(m_zip, index, ec);
+                if (!ec)
+                {
+                    contents = zip::fread(zfile, size_pair.first);
+                }
+            }
 
-        int64_t index = zip::get_index_from_filename(m_zip, name, ec);
-        if (ec)
-            return std::string();
+            zip::fclose(zfile);
+        }
 
-        auto size_pair = zip::get_size_from_index(m_zip, index, ec);
-        if (ec)
-            return std::string();
-
-        return zip::fread(zfile, size_pair.first);
+        return contents;
     }
 
     auto archive_zip::get_entries(filter_function filter_fn) const -> std::vector<entry_pointer>
     {
         std::vector<entry_pointer> entries;
 
-        for (uint64_t i = 0; i < get_number_of_entries(); ++i)
+        for (int64_t i = 0; i < get_number_of_entries(); ++i)
         {
             std::error_code ec;
             auto size_pair = zip::get_size_from_index(m_zip, i, ec);
