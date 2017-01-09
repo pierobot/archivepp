@@ -7,6 +7,12 @@
 #include <iterator>
 #include <string>
 
+#ifdef ARCHIVEPP_USE_WSTRING
+#   define ARCHIVEPP_STR(s) L##s
+#else
+#   define ARCHIVEPP_STR(s) s
+#endif
+
 namespace archivepp
 {
 #ifdef ARCHIVEPP_USE_WSTRING

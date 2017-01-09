@@ -34,6 +34,6 @@ if (LIBUNRAR_FOUND)
 endif ()
 
 if (ENABLE_COVERAGE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fno-inline")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
     setup_target_for_coverage(archivepp_coverage ctest coverage)
 endif ()

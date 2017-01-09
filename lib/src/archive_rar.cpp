@@ -84,6 +84,7 @@ namespace archivepp
             archivepp::string password;
 
             cb_context() = default;
+            ~cb_context() {}
         };
 
         /**
