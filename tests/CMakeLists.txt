@@ -21,7 +21,7 @@ endif ()
 # --- ZIP ----
 add_executable(zip_tests zip_tests.cpp)
 target_link_libraries(zip_tests ${ARCHIVEPP_LIBRARY})
-#target_link_libraries(zip_tests gcov)
+
 
 find_package(libzip REQUIRED)
 if (LIBZIP_FOUND)
@@ -32,7 +32,6 @@ endif ()
 # --- RAR ---
 add_executable(rar_tests rar_tests.cpp)
 target_link_libraries(rar_tests ${ARCHIVEPP_LIBRARY})
-#target_link_libraries(rar_tests gcov)
 
 find_package(libunrar REQUIRED)
 if (LIBUNRAR_FOUND)
@@ -40,7 +39,13 @@ if (LIBUNRAR_FOUND)
     target_link_libraries(rar_tests ${LIBUNRAR_LIBRARY})
 endif ()
 
-# --- 7Z --- 
+# --- 7Z ---
+
+# Link the tests against gcov if necessary
+if (ENABLE_COVERAGE)
+    target_link_libraries(zip_tests gcov)
+    target_link_libraries(rar_tests gcov)
+endif()
 
 # Declare our test modules depend on libarchivepp
 add_dependencies(zip_tests archivepp)

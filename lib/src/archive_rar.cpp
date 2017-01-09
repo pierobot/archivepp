@@ -96,6 +96,7 @@ namespace archivepp
         */
         static int CALLBACK callback(UINT msg, LPARAM context, LPARAM data, LPARAM size)
         {
+            int result = 0;
             cb_context * context_ptr = reinterpret_cast<cb_context*>(context);
             // Ensure it's a valid pointer
             if (context_ptr == nullptr)
@@ -114,7 +115,8 @@ namespace archivepp
                 // Use std::back_inserter to ensure that the unpacked data is always appended to our buffer
                 std::copy(&unpacked_data[0], &unpacked_data[size], std::back_inserter(context_ptr->buffer));
 
-                return 1;
+                result = 1;
+                break;
             }
 
 #ifdef ARCHIVEPP_USE_WSTRING
@@ -129,9 +131,9 @@ namespace archivepp
                     auto length = context_ptr->password.length() > size ? size : context_ptr->password.length();
                     std::wcsncpy(reinterpret_cast<wchar_t*>(data), context_ptr->password.c_str(), length);
 
-                    return 1;
+                    result = 1;
                 }
-                
+
                 break;
             }
 #else
@@ -146,7 +148,7 @@ namespace archivepp
                     auto length = static_cast<LPARAM>(context_ptr->password.length()) > size ? size : context_ptr->password.length();
                     std::strncpy(reinterpret_cast<char*>(data), context_ptr->password.c_str(), length);
 
-                    return 1;
+                    result = 1;
                 }
 
                 break;
@@ -156,7 +158,7 @@ namespace archivepp
                 break;
             }
 
-            return -1;
+            return result;
         }
 
         std::string fread(archivepp::string const & path, archivepp::string const & name, archivepp::string const & password, std::error_code & ec)
