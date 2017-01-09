@@ -133,6 +133,8 @@ TEST_CASE("archive_zip - get entries and get contents")
 
     REQUIRE(entries.size() == 1);
     REQUIRE(entries[0]->get_name() == "archive/3");
+    REQUIRE(entries[0]->get_uncompressed_size() == 3);
+
     std::string contents = archive.get_contents(entries[0], ec);
     REQUIRE(contents == "333");
 
@@ -143,6 +145,8 @@ TEST_CASE("archive_zip - get entries and get contents")
 
     REQUIRE(entries.size() == 1);
     REQUIRE(entries[0]->get_name() == "archive/2");
+    REQUIRE(entries[0]->get_uncompressed_size() == 2);
+
     contents = archive.get_contents(entries[0], ec);
     REQUIRE(contents == "22");
 
@@ -153,6 +157,64 @@ TEST_CASE("archive_zip - get entries and get contents")
 
     REQUIRE(entries.size() == 1);
     REQUIRE(entries[0]->get_name() == "archive/1");
+    REQUIRE(entries[0]->get_uncompressed_size() == 1);
+
     contents = archive.get_contents(entries[0], ec);
     REQUIRE(contents == "1");
+}
+
+TEST_CASE("archive_zip - get entries and get encrypted contents with password")
+{
+    archivepp::string path("../../tests/zip/archive.zip");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    REQUIRE(ec.value() == 0);
+
+    auto entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
+    {
+        return entry_ptr->get_name() != "archive/3";
+    });
+
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0]->get_name() == "archive/3");
+    REQUIRE(entries[0]->get_uncompressed_size() == 3);
+
+    std::string contents = archive.get_contents(entries[0], password, ec);
+    REQUIRE(contents == "333");
+
+    entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
+    {
+        return entry_ptr->get_name() != "archive/2";
+    });
+
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0]->get_name() == "archive/2");
+    REQUIRE(entries[0]->get_uncompressed_size() == 2);
+
+    contents = archive.get_contents(entries[0], password, ec);
+    REQUIRE(contents == "22");
+
+    entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
+    {
+        return entry_ptr->get_name() != "archive/1";
+    });
+
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0]->get_name() == "archive/1");
+    REQUIRE(entries[0]->get_uncompressed_size() == 1);
+    contents = archive.get_contents(entries[0], password, ec);
+    REQUIRE(contents == "1");
+}
+
+TEST_CASE("archive_zip - get contents to invalid entry_pointer throws")
+{
+    archivepp::string path("../../tests/zip/archive.zip");
+    std::error_code ec;
+    archivepp::archive_zip archive(path, ec);
+
+    REQUIRE(ec.value() == 0);
+
+    archivepp::archive::entry_pointer entry_ptr(nullptr);
+    CHECK_THROWS_AS(archive.get_contents(entry_ptr, ec), archivepp::null_argument_error);   
 }
