@@ -117,3 +117,42 @@ TEST_CASE("archive_rar - get encrypted contents with archive_entry password")
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "333");
 }
+
+TEST_CASE("archive_rar - get entries and get contents")
+{
+    archivepp::string path("../../tests/rar/archive.rar");
+    std::error_code ec;
+    archivepp::archive_rar archive(path, ec);
+
+    REQUIRE(ec.value() == 0);
+
+    auto entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
+    {
+        return entry_ptr->get_name() != "archive/3";
+    });
+
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0]->get_name() == "archive/3");
+    std::string contents = archive.get_contents(entries[0], ec);
+    REQUIRE(contents == "333");
+
+    entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
+    {
+        return entry_ptr->get_name() != "archive/2";
+    });
+
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0]->get_name() == "archive/2");
+    contents = archive.get_contents(entries[0], ec);
+    REQUIRE(contents == "22");
+
+    entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
+    {
+        return entry_ptr->get_name() != "archive/1";
+    });
+
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0]->get_name() == "archive/1");
+    contents = archive.get_contents(entries[0], ec);
+    REQUIRE(contents == "1");
+}

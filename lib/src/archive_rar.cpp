@@ -174,11 +174,7 @@ namespace archivepp
                 throw archivepp::null_pointer_error("context_ptr", __FUNCTION__);
             
             context_ptr->password = password;
-// #ifdef ARCHIVEPP_USE_WSTRING
-//             ::RARSetPassword(handle, const_cast<char*>(to_utf8(password).c_str()));
-// #else
-//             ::RARSetPassword(handle, const_cast<char*>(password.c_str()));
-// #endif
+
             ::RARSetCallback(handle, unrar::callback, reinterpret_cast<LPARAM>(context_ptr.get()));
 
             ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
@@ -190,6 +186,43 @@ namespace archivepp
                     ec = std::error_code(::RARProcessFile(handle, RAR_TEST, nullptr, nullptr), std::system_category());
                     break;
                 }
+
+                ::RARProcessFile(handle, RAR_SKIP, nullptr, nullptr);
+                ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
+            }
+
+            unrar::close(handle);
+
+            return std::string(std::move(context_ptr->buffer));
+        }
+
+        std::string fread_index(archivepp::string const & path, uint64_t index, archivepp::string const & password, std::error_code & ec)
+        {
+            RAROpenArchiveDataEx data {};
+            RARHeaderDataEx header {};
+            HANDLE handle = unrar::open(path, data, ec);
+            if (handle == nullptr)
+                return std::string();
+
+            std::unique_ptr<unrar::cb_context> context_ptr(new unrar::cb_context());
+            if (context_ptr == nullptr)
+                throw archivepp::null_pointer_error("context_ptr", __FUNCTION__);
+            
+            context_ptr->password = password;
+
+            ::RARSetCallback(handle, unrar::callback, reinterpret_cast<LPARAM>(context_ptr.get()));
+
+            ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
+            int64_t current_index = 0;
+            while (ec.value() == ERAR_SUCCESS)
+            {
+                if (current_index == index)
+                {
+                    ec = std::error_code(::RARProcessFile(handle, RAR_TEST, nullptr, nullptr), std::system_category());
+                    break;
+                }
+
+                ++current_index;
 
                 ::RARProcessFile(handle, RAR_SKIP, nullptr, nullptr);
                 ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
@@ -247,7 +280,8 @@ namespace archivepp
 
     std::string archive_rar::get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const
     {
-        return std::string();
+        archivepp::string real_password = get_password().empty() == true ? password : get_password();
+        return unrar::fread_index(get_path(), index, real_password, ec);
     }
 
     std::string archive_rar::get_contents(archivepp::string const & name, std::error_code & ec) const
