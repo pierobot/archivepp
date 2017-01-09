@@ -2,11 +2,20 @@
 
 #include <archivepp/archive_zip.hpp>
 
-static archivepp::string password = "test";
+static archivepp::string nonexistent_path = ARCHIVEPP_STR("../../doesnotexist");
+static archivepp::string archive_path = ARCHIVEPP_STR("../../tests/zip/archive.zip");
+static archivepp::string archive_encrypted_path = ARCHIVEPP_STR("../../tests/zip/archive_encrypted.zip");
+static archivepp::string archive_file_1 = ARCHIVEPP_STR("archive/1");
+static archivepp::string archive_file_2 = ARCHIVEPP_STR("archive/2");
+static archivepp::string archive_file_3 = ARCHIVEPP_STR("archive/3");
+static archivepp::string archive_encrypted_file_1 = ARCHIVEPP_STR("archive_encrypted/1");
+static archivepp::string archive_encrypted_file_2 = ARCHIVEPP_STR("archive_encrypted/2");
+static archivepp::string archive_encrypted_file_3 = ARCHIVEPP_STR("archive_encrypted/3");
+static archivepp::string password = ARCHIVEPP_STR("test");
 
 TEST_CASE("archive_zip - constructor on nonexistent file")
 {
-    archivepp::string path("../../doesnotexist");
+    archivepp::string path(nonexistent_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -15,7 +24,7 @@ TEST_CASE("archive_zip - constructor on nonexistent file")
 
 TEST_CASE("archive_zip - get path")
 {
-    archivepp::string path("../../doesnotexist");
+    archivepp::string path(nonexistent_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -24,7 +33,7 @@ TEST_CASE("archive_zip - get path")
 
 TEST_CASE("archive_zip - get number of entries")
 {
-    archivepp::string path("../../tests/zip/archive.zip");
+    archivepp::string path(archive_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -35,7 +44,7 @@ TEST_CASE("archive_zip - get number of entries")
 
 TEST_CASE("archive_rar - get number of entries on nonexistent file throws")
 {
-    archivepp::string path("../../doesnotexist");
+    archivepp::string path(nonexistent_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -44,7 +53,7 @@ TEST_CASE("archive_rar - get number of entries on nonexistent file throws")
 
 TEST_CASE("archive_zip - get entries")
 {
-    archivepp::string path("../../tests/zip/archive.zip");
+    archivepp::string path(archive_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -57,70 +66,70 @@ TEST_CASE("archive_zip - get entries")
 
 TEST_CASE("archive_zip - get contents by name")
 {
-    archivepp::string path("../../tests/zip/archive.zip");
+    archivepp::string path(archive_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
     REQUIRE(ec.value() == 0);
 
-    std::string contents = archive.get_contents("archive/2", ec);
+    std::string contents = archive.get_contents(archive_file_2, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "22");
 
-    contents = archive.get_contents("archive/1", ec);
+    contents = archive.get_contents(archive_file_1, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "1");
 
-    contents = archive.get_contents("archive/3", ec);
+    contents = archive.get_contents(archive_file_3, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "333");
 }
 
 TEST_CASE("archive_zip - get encrypted contents with archive password")
 {
-    archivepp::string path("../../tests/zip/archive_encrypted.zip");
+    archivepp::string path(archive_encrypted_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, password, ec);
 
     REQUIRE(ec.value() == 0);
 
-    std::string contents = archive.get_contents("archive_encrypted/2", ec);
+    std::string contents = archive.get_contents(archive_encrypted_file_2, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "22");
 
-    contents = archive.get_contents("archive_encrypted/1", ec);
+    contents = archive.get_contents(archive_encrypted_file_1, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "1");
 
-    contents = archive.get_contents("archive_encrypted/3", ec);
+    contents = archive.get_contents(archive_encrypted_file_3, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "333");
 }
 
 TEST_CASE("archive_zip - get encrypted contents with archive_entry password")
 {
-    archivepp::string path("../../tests/zip/archive_encrypted.zip");
+    archivepp::string path(archive_encrypted_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
     REQUIRE(ec.value() == 0);
 
-    std::string contents = archive.get_contents("archive_encrypted/2", password, ec);
+    std::string contents = archive.get_contents(archive_encrypted_file_2, password, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "22");
 
-    contents = archive.get_contents("archive_encrypted/1", password, ec);
+    contents = archive.get_contents(archive_encrypted_file_1, password, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "1");
 
-    contents = archive.get_contents("archive_encrypted/3", password, ec);
+    contents = archive.get_contents(archive_encrypted_file_3, password, ec);
     REQUIRE(ec.value() == 0);
     REQUIRE(contents == "333");
 }
 
 TEST_CASE("archive_zip - get entries and get contents")
 {
-    archivepp::string path("../../tests/zip/archive.zip");
+    archivepp::string path(archive_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -128,11 +137,11 @@ TEST_CASE("archive_zip - get entries and get contents")
 
     auto entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
     {
-        return entry_ptr->get_name() != "archive/3";
+        return entry_ptr->get_name() != archive_file_3;
     });
 
     REQUIRE(entries.size() == 1);
-    REQUIRE(entries[0]->get_name() == "archive/3");
+    REQUIRE(entries[0]->get_name() == archive_file_3);
     REQUIRE(entries[0]->get_uncompressed_size() == 3);
 
     std::string contents = archive.get_contents(entries[0], ec);
@@ -140,11 +149,11 @@ TEST_CASE("archive_zip - get entries and get contents")
 
     entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
     {
-        return entry_ptr->get_name() != "archive/2";
+        return entry_ptr->get_name() != archive_file_2;
     });
 
     REQUIRE(entries.size() == 1);
-    REQUIRE(entries[0]->get_name() == "archive/2");
+    REQUIRE(entries[0]->get_name() == archive_file_2);
     REQUIRE(entries[0]->get_uncompressed_size() == 2);
 
     contents = archive.get_contents(entries[0], ec);
@@ -152,11 +161,11 @@ TEST_CASE("archive_zip - get entries and get contents")
 
     entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
     {
-        return entry_ptr->get_name() != "archive/1";
+        return entry_ptr->get_name() != archive_file_1;
     });
 
     REQUIRE(entries.size() == 1);
-    REQUIRE(entries[0]->get_name() == "archive/1");
+    REQUIRE(entries[0]->get_name() == archive_file_1);
     REQUIRE(entries[0]->get_uncompressed_size() == 1);
 
     contents = archive.get_contents(entries[0], ec);
@@ -165,7 +174,7 @@ TEST_CASE("archive_zip - get entries and get contents")
 
 TEST_CASE("archive_zip - get entries and get encrypted contents with password")
 {
-    archivepp::string path("../../tests/zip/archive.zip");
+    archivepp::string path(archive_encrypted_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -173,11 +182,11 @@ TEST_CASE("archive_zip - get entries and get encrypted contents with password")
 
     auto entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
     {
-        return entry_ptr->get_name() != "archive/3";
+        return entry_ptr->get_name() != archive_encrypted_file_3;
     });
 
     REQUIRE(entries.size() == 1);
-    REQUIRE(entries[0]->get_name() == "archive/3");
+    REQUIRE(entries[0]->get_name() == archive_encrypted_file_3);
     REQUIRE(entries[0]->get_uncompressed_size() == 3);
 
     std::string contents = archive.get_contents(entries[0], password, ec);
@@ -185,11 +194,11 @@ TEST_CASE("archive_zip - get entries and get encrypted contents with password")
 
     entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
     {
-        return entry_ptr->get_name() != "archive/2";
+        return entry_ptr->get_name() != archive_encrypted_file_2;
     });
 
     REQUIRE(entries.size() == 1);
-    REQUIRE(entries[0]->get_name() == "archive/2");
+    REQUIRE(entries[0]->get_name() == archive_encrypted_file_2);
     REQUIRE(entries[0]->get_uncompressed_size() == 2);
 
     contents = archive.get_contents(entries[0], password, ec);
@@ -197,11 +206,11 @@ TEST_CASE("archive_zip - get entries and get encrypted contents with password")
 
     entries = archive.get_entries([](archivepp::archive::entry_pointer const & entry_ptr)
     {
-        return entry_ptr->get_name() != "archive/1";
+        return entry_ptr->get_name() != archive_encrypted_file_1;
     });
 
     REQUIRE(entries.size() == 1);
-    REQUIRE(entries[0]->get_name() == "archive/1");
+    REQUIRE(entries[0]->get_name() == archive_encrypted_file_1);
     REQUIRE(entries[0]->get_uncompressed_size() == 1);
     contents = archive.get_contents(entries[0], password, ec);
     REQUIRE(contents == "1");
@@ -209,7 +218,7 @@ TEST_CASE("archive_zip - get entries and get encrypted contents with password")
 
 TEST_CASE("archive_zip - get contents to invalid entry_pointer throws")
 {
-    archivepp::string path("../../tests/zip/archive.zip");
+    archivepp::string path(archive_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
@@ -221,7 +230,7 @@ TEST_CASE("archive_zip - get contents to invalid entry_pointer throws")
 
 TEST_CASE("archive_zip - get entries to nonexistent file throws")
 {
-    archivepp::string path("../../doesnotexist");
+    archivepp::string path(nonexistent_path);
     std::error_code ec;
     archivepp::archive_zip archive(path, ec);
 
