@@ -123,36 +123,40 @@ namespace archivepp
                 // Ensure there's a password for the context
                 if (context_ptr->password.empty() != true)
                 {
-                    // Copy the password to data and assign the size
-                    // No need to check if data and size are valid pointers
-                    // They are allocated on the stack in libunrar's function CmdExtract::ExtrDllGetPassword()
-                    auto length = context_ptr->password.length() > 128 ? 128 : context_ptr->password.length();
+                    // Copy the password to data
+                    // No need to check if data is a valid pointer
+                    // It is allocated on the stack in libunrar's function CmdExtract::ExtrDllGetPassword()
+                    auto length = context_ptr->password.length() > size ? size : context_ptr->password.length();
                     std::wcsncpy(reinterpret_cast<wchar_t*>(data), context_ptr->password.c_str(), length);
-                    *reinterpret_cast<size_t*>(size) = length;
 
                     return 1;
                 }
+                
+                break;
             }
 #else
             case UCM_NEEDPASSWORD:
             {
-                // Ensure there's a password for the context
+                //Ensure there's a password for the context
                 if (context_ptr->password.empty() != true)
                 {
-                    // Copy the password to data and assign the size
-                    // No need to check if data and size are valid pointers
-                    // They are allocated on the stack in libunrar's function CmdExtract::ExtrDllGetPassword()
-                    auto length = context_ptr->password.length() > 128 ? 128 : context_ptr->password.length();
+                    // Copy the password to data
+                    // No need to check if data is a valid pointer
+                    // It is allocated on the stack in libunrar's function CmdExtract::ExtrDllGetPassword()
+                    auto length = static_cast<LPARAM>(context_ptr->password.length()) > size ? size : context_ptr->password.length();
                     std::strncpy(reinterpret_cast<char*>(data), context_ptr->password.c_str(), length);
-                    *reinterpret_cast<size_t*>(size) = length;
 
                     return 1;
                 }
+
+                break;
             }
 #endif
             default:
-                return -1;
+                break;
             }
+
+            return -1;
         }
 
         std::string fread(archivepp::string const & path, archivepp::string const & name, archivepp::string const & password, std::error_code & ec)
@@ -168,11 +172,11 @@ namespace archivepp
                 throw archivepp::null_pointer_error("context_ptr", __FUNCTION__);
             
             context_ptr->password = password;
-#ifdef ARCHIVEPP_USE_WSTRING
-            ::RARSetPassword(handle, const_cast<char*>(to_utf8(password).c_str()));
-#else
-            ::RARSetPassword(handle, const_cast<char*>(password.c_str()));
-#endif
+// #ifdef ARCHIVEPP_USE_WSTRING
+//             ::RARSetPassword(handle, const_cast<char*>(to_utf8(password).c_str()));
+// #else
+//             ::RARSetPassword(handle, const_cast<char*>(password.c_str()));
+// #endif
             ::RARSetCallback(handle, unrar::callback, reinterpret_cast<LPARAM>(context_ptr.get()));
 
             ec = std::error_code(::RARReadHeaderEx(handle, &header), std::system_category());
