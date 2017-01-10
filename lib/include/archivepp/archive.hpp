@@ -50,7 +50,7 @@ namespace archivepp
          * @param password The password for the entry.
          * @param ec An object that will hold any errors.
          */
-        virtual std::string get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const = 0;
+        virtual std::string get_contents(entry_pointer const & entry, archivepp::secure_string const & password, std::error_code & ec) const = 0;
 
         /**
          * Gets the contents of an entry in the archive.
@@ -67,7 +67,7 @@ namespace archivepp
          * @param password The password for the entry.
          * @param ec An object that will hold any errors.
          */
-        virtual std::string get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const = 0;
+        virtual std::string get_contents(uint64_t index, archivepp::secure_string const & password, std::error_code & ec) const = 0;
 
         /**
          * Gets the contents of an entry in the archive.
@@ -84,7 +84,7 @@ namespace archivepp
          * @param password The password for the entry.
          * @param ec An object that will hold any errors.
          */
-        virtual std::string get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const = 0;
+        virtual std::string get_contents(archivepp::string const & name, archivepp::secure_string const & password, std::error_code & ec) const = 0;
 
         /**
          * Gets a vector of entry pointers from the archive.
@@ -96,7 +96,7 @@ namespace archivepp
         /**
          * Gets the password of the archive.
          */
-        virtual archivepp::string const & get_password() const = 0;
+        virtual archivepp::secure_string const & get_password() const = 0;
     private:
     };
 }
