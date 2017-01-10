@@ -11,17 +11,9 @@ else ()
     add_definitions(-D_UNIX)
 endif ()
 
-# Enable flags for code coverage
-#set(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
-#set(GCC_COVERAGE_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
-
 # --- ZIP ----
 add_executable(zip_tests zip_tests.cpp)
 target_link_libraries(zip_tests ${ARCHIVEPP_LIBRARY})
-
 
 find_package(libzip REQUIRED)
 if (LIBZIP_FOUND)
@@ -39,18 +31,23 @@ if (LIBUNRAR_FOUND)
     target_link_libraries(rar_tests ${LIBUNRAR_LIBRARY})
 endif ()
 
-# --- 7Z ---
+# --- Miscellaneous ---
+add_executable(misc_tests misc_tests.cpp)
+target_link_libraries(misc_tests ${ARCHIVEPP_LIBRARY})
 
 # Link the tests against gcov if necessary
 if (ENABLE_COVERAGE)
     target_link_libraries(zip_tests gcov)
     target_link_libraries(rar_tests gcov)
+    target_link_libraries(misc_tests gcov)
 endif()
 
 # Declare our test modules depend on libarchivepp
 add_dependencies(zip_tests archivepp)
 add_dependencies(rar_tests archivepp)
+add_dependencies(misc_tests archivepp)
 
 # Create the individual tests
 add_test(archivepp_zip_test zip_tests)
 add_test(archivepp_rar_test rar_tests)
+add_test(archivepp_misc_test misc_tests)
