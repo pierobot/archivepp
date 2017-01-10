@@ -14,7 +14,7 @@ namespace archivepp
         {
         }
 
-        basic_archive(archivepp::string path, archivepp::string password) :
+        basic_archive(archivepp::string path, secure_string password) :
             m_path(std::move(path)),
             m_password(std::move(password))
         {
@@ -27,12 +27,12 @@ namespace archivepp
             return m_path;
         }
     protected:
-        virtual archivepp::string const & get_password() const override final
+        virtual secure_string const & get_password() const override final
         {
             return m_password;
         }
     private:
         archivepp::string m_path;
-        archivepp::string m_password;
+        secure_string m_password;
     };
 }

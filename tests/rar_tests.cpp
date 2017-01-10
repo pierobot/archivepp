@@ -11,7 +11,7 @@ static archivepp::string archive_file_3 = ARCHIVEPP_STR("archive/3");
 static archivepp::string archive_encrypted_file_1 = ARCHIVEPP_STR("archive_encrypted/1");
 static archivepp::string archive_encrypted_file_2 = ARCHIVEPP_STR("archive_encrypted/2");
 static archivepp::string archive_encrypted_file_3 = ARCHIVEPP_STR("archive_encrypted/3");
-static archivepp::string password = ARCHIVEPP_STR("test");
+static archivepp::secure_string password = ARCHIVEPP_STR("test");
 
 TEST_CASE("archive_rar - constructor on nonexistent file")
 {

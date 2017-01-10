@@ -1,10 +1,25 @@
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/utf8_v2_3_4/source)
 
+if (${CMAKE_SIZEOF_VOID_P} STREQUAL "8")
+    add_definitions(-DARCHIVEPP_ARCH_64)
+endif ()
+
+include(CheckCXXSymbolExists)
 if (WIN32)
     add_definitions(-DARCHIVEPP_USE_WSTRING)
+
+    CHECK_CXX_SYMBOL_EXISTS(RtlZeroSecureMemory "Windows.h" HAS_RTLZEROSECUREMEMORY)
+    if (HAS_RTLZEROSECUREMEMORY)
+        add_definitions(-DARCHIVEPP_HAS_RTLZEROSECUREMEMORY)
+    endif ()
 else ()
     # unrar/dll.hpp has type definitions we need in a #ifdef _UNIX statement
     add_definitions(-D_UNIX)
+
+    CHECK_CXX_SYMBOL_EXISTS(memset_s "string.h" HAS_MEMSET_S)
+    if (HAS_MEMSET_S)
+        add_definitions(-DARCHIVEPP_HAS_MEMSET_S)
+    endif ()
 endif ()
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
@@ -19,6 +34,8 @@ add_library(archivepp STATIC
 
     ${CURRENT_DIR}/include/archivepp/archive_rar.hpp ${CURRENT_DIR}/src/archive_rar.cpp
     ${CURRENT_DIR}/include/archivepp/archive_entry_rar.hpp ${CURRENT_DIR}/src/archive_entry_rar.cpp
+
+    ${CURRENT_DIR}/include/archivepp/secure_allocator.hpp ${CURRENT_DIR}/src/secure_allocator.cpp
 )
 
 find_package(libzip REQUIRED)
