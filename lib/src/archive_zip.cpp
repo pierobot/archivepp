@@ -73,7 +73,7 @@ namespace archivepp
             return std::make_pair(original_size, compressed_size);
         }
 
-        static zip_file_t * fopen_from_index(zip_t * zip, int64_t index, std::string const & password, std::error_code & ec)
+        static zip_file_t * fopen_from_index(zip_t * zip, int64_t index, secure_string const & password, std::error_code & ec)
         {
             zip_file_t * zfile = password.empty() == true ? ::zip_fopen_index(zip, index, 0) :
                                                             ::zip_fopen_index_encrypted(zip, index, 0, password.c_str());
@@ -83,7 +83,7 @@ namespace archivepp
             return zfile;
         }
 
-        static zip_file_t * fopen_from_name(zip_t * zip, std::string const & name, std::string const & password, std::error_code & ec)
+        static zip_file_t * fopen_from_name(zip_t * zip, std::string const & name, secure_string const & password, std::error_code & ec)
         {
             zip_file_t * zfile = password.empty() == true ? ::zip_fopen(zip, name.c_str(), 0) :
                                                             ::zip_fopen_encrypted(zip, name.c_str(), 0, password.c_str());
@@ -157,7 +157,7 @@ namespace archivepp
     {
     }
 
-    archive_zip::archive_zip(archivepp::string path, archivepp::string password, std::error_code & ec) :
+    archive_zip::archive_zip(archivepp::string path, secure_string password, std::error_code & ec) :
         basic_archive(std::move(path), std::move(password)),
         m_zip(zip::open(get_path(), ec))
     {
@@ -184,7 +184,7 @@ namespace archivepp
         return get_contents(entry->get_index(), ec);
     }
 
-    std::string archive_zip::get_contents(entry_pointer const & entry, archivepp::string const & password, std::error_code & ec) const
+    std::string archive_zip::get_contents(entry_pointer const & entry, secure_string const & password, std::error_code & ec) const
     {
         if (entry == nullptr)
             throw archivepp::null_argument_error("entry", __FUNCTION__);
@@ -197,12 +197,12 @@ namespace archivepp
         return get_contents(index, "", ec);
     }
 
-    std::string archive_zip::get_contents(uint64_t index, archivepp::string const & password, std::error_code & ec) const
+    std::string archive_zip::get_contents(uint64_t index, secure_string const & password, std::error_code & ec) const
     {
         std::string contents;
 
         // If the user supplies a password for this particular entry, then use it rather than the archive password
-        archivepp::string realpassword = password.empty() == false ? password : get_password();
+        secure_string realpassword = password.empty() == false ? password : get_password();
         zip_file_t * zfile = zip::fopen_from_index(m_zip, index, realpassword, ec);
         if (!ec)
         {
@@ -223,12 +223,12 @@ namespace archivepp
         return get_contents(name, "", ec);
     }
 
-    std::string archive_zip::get_contents(archivepp::string const & name, archivepp::string const & password, std::error_code & ec) const
+    std::string archive_zip::get_contents(archivepp::string const & name, secure_string const & password, std::error_code & ec) const
     {
         std::string contents;
 
         // If the user supplies a password for this particular entry, then use it rather than the archive password
-        archivepp::string realpassword = password.empty() == false ? password : get_password();
+        secure_string realpassword = password.empty() == false ? password : get_password();
 
 #ifdef ARCHIVEPP_USE_WSTRING
         std::string utf8name = to_utf8(name);
