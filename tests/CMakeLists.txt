@@ -5,15 +5,20 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/doctest)
 add_definitions(-DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
 
 if (WIN32)
+	add_definitions(-DARCHIVEPP_USE_WSTRING)
 else ()
-    set(ARCHIVEPP_LIBRARY ${CMAKE_SOURCE_DIR}/build/lib/libarchivepp.a)
-
     add_definitions(-D_UNIX)
 endif ()
 
 # --- ZIP ----
 add_executable(zip_tests zip_tests.cpp)
-target_link_libraries(zip_tests ${ARCHIVEPP_LIBRARY})
+target_link_libraries(zip_tests archivepp)
+
+find_package(ZLIB REQUIRED)
+if (ZLIB_FOUND)
+    target_include_directories(zip_tests PUBLIC ${ZLIB_INCLUDE_DIRS})
+    target_link_libraries(zip_tests ${ZLIB_LIBRARIES})
+endif ()
 
 find_package(libzip REQUIRED)
 if (LIBZIP_FOUND)
@@ -23,7 +28,7 @@ endif ()
 
 # --- RAR ---
 add_executable(rar_tests rar_tests.cpp)
-target_link_libraries(rar_tests ${ARCHIVEPP_LIBRARY})
+target_link_libraries(rar_tests archivepp)
 
 find_package(libunrar REQUIRED)
 if (LIBUNRAR_FOUND)
@@ -33,7 +38,7 @@ endif ()
 
 # --- Miscellaneous ---
 add_executable(misc_tests misc_tests.cpp)
-target_link_libraries(misc_tests ${ARCHIVEPP_LIBRARY})
+target_link_libraries(misc_tests archivepp)
 
 # Link the tests against gcov if necessary
 if (ENABLE_COVERAGE)

@@ -1,5 +1,6 @@
 #include <doctest/doctest.h>
 
+#include <archivepp/string.hpp>
 #include <archivepp/secure_allocator.hpp>
 
 #include <cstring>
@@ -7,6 +8,13 @@
 
 using secure_char_allocator = archivepp::secure_allocator<char>;
 using secure_wchar_allocator = archivepp::secure_allocator<wchar_t>;
+
+TEST_CASE("normalize_paths")
+{
+    archivepp::string path = ARCHIVEPP_STR("this\\path\\does\\not\\exist");
+
+    REQUIRE(archivepp::normalize_path(path) == ARCHIVEPP_STR("this/path/does/not/exist"));
+}
 
 TEST_CASE("secure_allocator<char>")
 {

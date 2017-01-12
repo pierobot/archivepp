@@ -2,11 +2,11 @@
 
 #include <archivepp/basic_archive_entry.hpp>
 
-#include <unrar/dll.hpp>
-
 #ifdef _MSC_VER
 #   include <Windows.h>
 #endif
+
+#include <unrar/dll.hpp>
 
 namespace archivepp
 {
