@@ -5,7 +5,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 include(CTest)
 include(CheckCXXCompilerFlag)
-include(CodeCoverage)
+
+if (NOT WIN32)
+	include(CodeCoverage)
+endif ()
 
 option(ENABLE_COVERAGE "Enables coverage report for the library.")
 
