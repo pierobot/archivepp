@@ -17,11 +17,11 @@
 
 namespace archivepp
 {
-    using secure_string = std::basic_string<char, std::char_traits<char>, secure_allocator<char>>;
 #ifdef ARCHIVEPP_USE_WSTRING
     using string = std::wstring;
     using secure_string = std::basic_string<wchar_t, std::char_traits<wchar_t>, secure_allocator<wchar_t>>;
 #else
+	using secure_string = std::basic_string<char, std::char_traits<char>, secure_allocator<char>>;
     using string = std::string;
 #endif
 
@@ -35,6 +35,15 @@ namespace archivepp
         return result;
     }
 
+	inline std::string to_utf8(secure_string const & str)
+	{
+		std::string result;
+
+		utf8::utf16to8(str.begin(), str.end(), std::back_inserter(result));
+
+		return result;
+	}
+
     inline std::wstring to_utf16(std::string const & str)
     {
         std::wstring result;
@@ -44,4 +53,6 @@ namespace archivepp
         return result;
     }
 #endif
+
+    archivepp::string & normalize_path(archivepp::string & path);
 }

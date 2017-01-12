@@ -6,6 +6,7 @@ endif ()
 
 include(CheckCXXSymbolExists)
 if (WIN32)
+    #add_definitions(-DZIP_STATIC)
     add_definitions(-DARCHIVEPP_USE_WSTRING)
 
     CHECK_CXX_SYMBOL_EXISTS(RtlZeroSecureMemory "Windows.h" HAS_RTLZEROSECUREMEMORY)
@@ -29,14 +30,30 @@ add_library(archivepp STATIC
     ${CURRENT_DIR}/include/archivepp/archive.hpp
     ${CURRENT_DIR}/include/archivepp/basic_archive.hpp
 
-    ${CURRENT_DIR}/include/archivepp/archive_zip.hpp ${CURRENT_DIR}/src/archive_zip.cpp
-    ${CURRENT_DIR}/include/archivepp/archive_entry_zip.hpp ${CURRENT_DIR}/src/archive_entry_zip.cpp
+    ${CURRENT_DIR}/src/archive_zip.cpp
+    ${CURRENT_DIR}/include/archivepp/archive_zip.hpp
+    
+    ${CURRENT_DIR}/src/archive_entry_zip.cpp
+    ${CURRENT_DIR}/include/archivepp/archive_entry_zip.hpp
 
-    ${CURRENT_DIR}/include/archivepp/archive_rar.hpp ${CURRENT_DIR}/src/archive_rar.cpp
-    ${CURRENT_DIR}/include/archivepp/archive_entry_rar.hpp ${CURRENT_DIR}/src/archive_entry_rar.cpp
+    ${CURRENT_DIR}/src/archive_rar.cpp
+    ${CURRENT_DIR}/include/archivepp/archive_rar.hpp
 
-    ${CURRENT_DIR}/include/archivepp/secure_allocator.hpp ${CURRENT_DIR}/src/secure_allocator.cpp
+    ${CURRENT_DIR}/src/archive_entry_rar.cpp
+    ${CURRENT_DIR}/include/archivepp/archive_entry_rar.hpp
+
+    ${CURRENT_DIR}/src/string.cpp
+    ${CURRENT_DIR}/include/archivepp/string.hpp
+
+    ${CURRENT_DIR}/src/secure_allocator.cpp
+    ${CURRENT_DIR}/include/archivepp/secure_allocator.hpp
 )
+
+find_package(ZLIB REQUIRED)
+if (ZLIB_FOUND)
+    target_include_directories(archivepp PUBLIC ${ZLIB_INCLUDE_DIRS})
+    target_link_libraries(archivepp ${ZLIB_LIBRARIES})
+endif ()
 
 find_package(libzip REQUIRED)
 if (LIBZIP_FOUND)

@@ -26,7 +26,7 @@ namespace archivepp
             // This presents a problem because we use std::wstring on Windows
             // The solution to this is to encode our UTF-16 string to UTF-8 as libzip supports that
     #ifdef ARCHIVEPP_USE_WSTRING
-            zip = ::zip_open(to_utf8(path.c_str()), ZIP_RDONLY, &error);
+            zip = ::zip_open(to_utf8(path).c_str(), ZIP_RDONLY, &error);
     #else
             zip = ::zip_open(path.c_str(), ZIP_RDONLY, &error);
     #endif
@@ -75,8 +75,12 @@ namespace archivepp
 
         static zip_file_t * fopen_from_index(zip_t * zip, int64_t index, secure_string const & password, std::error_code & ec)
         {
-            zip_file_t * zfile = password.empty() == true ? ::zip_fopen_index(zip, index, 0) :
+			zip_file_t * zfile = password.empty() == true ? ::zip_fopen_index(zip, index, 0) :
+#ifdef ARCHIVEPP_USE_WSTRING
+															::zip_fopen_index_encrypted(zip, index, 0, to_utf8(password).c_str());
+#else
                                                             ::zip_fopen_index_encrypted(zip, index, 0, password.c_str());
+#endif
 
             ec = zfile == nullptr ? get_last_error(zip) : std::error_code();
             
@@ -86,8 +90,11 @@ namespace archivepp
         static zip_file_t * fopen_from_name(zip_t * zip, std::string const & name, secure_string const & password, std::error_code & ec)
         {
             zip_file_t * zfile = password.empty() == true ? ::zip_fopen(zip, name.c_str(), 0) :
-                                                            ::zip_fopen_encrypted(zip, name.c_str(), 0, password.c_str());
-
+#ifdef ARCHIVEPP_USE_WSTRING
+															::zip_fopen_encrypted(zip, name.c_str(), 0, to_utf8(password).c_str());
+#else
+															::zip_fopen_encrypted(zip, name.c_str(), 0, password.c_str());
+#endif
             ec = zfile == nullptr ? get_last_error(zip) : std::error_code();
             
             return zfile;
@@ -142,9 +149,13 @@ namespace archivepp
             return name;
         }
 
-        static int64_t get_index_from_filename(zip_t * zip, std::string const & name, std::error_code & ec)
+        static int64_t get_index_from_filename(zip_t * zip, archivepp::string const & name, std::error_code & ec)
         {
+#ifdef ARCHIVEPP_USE_WSTRING
+			int64_t result = ::zip_name_locate(zip, to_utf8(name).c_str(), 0);
+#else
             int64_t result = ::zip_name_locate(zip, name.c_str(), 0);
+#endif
             ec = result == -1 ? get_last_error(zip) : std::error_code();
 
             return result;
@@ -194,7 +205,7 @@ namespace archivepp
 
     std::string archive_zip::get_contents(uint64_t index, std::error_code & ec) const
     {
-        return get_contents(index, "", ec);
+        return get_contents(index, ARCHIVEPP_STR(""), ec);
     }
 
     std::string archive_zip::get_contents(uint64_t index, secure_string const & password, std::error_code & ec) const
@@ -220,7 +231,7 @@ namespace archivepp
 
     std::string archive_zip::get_contents(archivepp::string const & name, std::error_code & ec) const
     {
-        return get_contents(name, "", ec);
+        return get_contents(name, ARCHIVEPP_STR(""), ec);
     }
 
     std::string archive_zip::get_contents(archivepp::string const & name, secure_string const & password, std::error_code & ec) const
