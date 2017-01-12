@@ -17,7 +17,7 @@ namespace archivepp
         {
             data.OpenMode = RAR_OM_EXTRACT;
 #ifdef ARCHIVEPP_USE_WSTRING
-            data.ArcNameW = const_cast<char*>(path.c_str());
+            data.ArcNameW = const_cast<wchar_t*>(path.c_str());
 #else
             data.ArcName = const_cast<char*>(path.c_str());
 #endif
@@ -72,15 +72,17 @@ namespace archivepp
         static archivepp::string get_name_from_header(RARHeaderDataEx const & header)
         {
 #ifdef ARCHIVEPP_USE_WSTRING
-            return archivepp::string(&header.FileNameW[0]);
+            archivepp::string name(&header.FileNameW[0]);
+            return archivepp::normalize_path(name);
 #else
-            return archivepp::string(&header.FileName[0]);
+            archivepp::string name(&header.FileName[0]);
+            return archivepp::normalize_path(name);
 #endif
         }
 
         struct cb_context
         {
-            std::string buffer;
+			std::string buffer;
             secure_string password;
 
             cb_context() = default;
@@ -236,7 +238,7 @@ namespace archivepp
     }
 
     archive_rar::archive_rar(archivepp::string path, std::error_code & ec) :
-        basic_archive(std::move(path))
+        basic_archive(std::move(normalize_path(path)))
     {
         RAROpenArchiveDataEx data {};
         HANDLE handle = unrar::open(get_path(), data, ec);
@@ -244,7 +246,7 @@ namespace archivepp
     }
 
     archive_rar::archive_rar(archivepp::string path, secure_string password, std::error_code & ec) :
-        basic_archive(std::move(path), std::move(password))
+        basic_archive(std::move(normalize_path(path)), std::move(password))
     {
         RAROpenArchiveDataEx data {};
         HANDLE handle = unrar::open(get_path(), data, ec);
@@ -263,7 +265,7 @@ namespace archivepp
 
     std::string archive_rar::get_contents(entry_pointer const & entry, std::error_code & ec) const
     {
-        return get_contents(entry, "", ec);
+        return get_contents(entry, ARCHIVEPP_STR(""), ec);
     }
 
     std::string archive_rar::get_contents(entry_pointer const & entry, secure_string const & password, std::error_code & ec) const
@@ -276,7 +278,7 @@ namespace archivepp
 
     std::string archive_rar::get_contents(uint64_t index, std::error_code & ec) const
     {
-        return get_contents(index, "", ec);
+        return get_contents(index, ARCHIVEPP_STR(""), ec);
     }
 
     std::string archive_rar::get_contents(uint64_t index, secure_string const & password, std::error_code & ec) const
@@ -287,13 +289,16 @@ namespace archivepp
 
     std::string archive_rar::get_contents(archivepp::string const & name, std::error_code & ec) const
     {
-        return get_contents(name, "", ec);
+        return get_contents(name, ARCHIVEPP_STR(""), ec);
     }
 
     std::string archive_rar::get_contents(archivepp::string const & name, secure_string const & password, std::error_code & ec) const
     {
         secure_string real_password = get_password().empty() == true ? password : get_password();
-        return unrar::fread(get_path(), name, real_password, ec);
+        archivepp::string normalized_name = name;
+        normalized_name = normalize_path(normalized_name);
+
+        return unrar::fread(get_path(), normalized_name, real_password, ec);
     }
 
     auto archive_rar::get_entries(filter_function filter_fn) const -> std::vector<entry_pointer>

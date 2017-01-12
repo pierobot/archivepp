@@ -5,8 +5,10 @@
 # LIBUNRAR_INCLUDE_DIR, where to find the headers
 #
 
-FIND_PATH(LIBUNRAR_INCLUDE_DIR dll.hpp
-    $ENV{LIBUNRAR_DIR}
+FIND_PATH(LIBUNRAR_INCLUDE_DIR
+    NAMES unrar/dll.hpp dll.hpp
+    PATHS
+    $ENV{LIBUNRAR_DIR}/include
     ~/Library/Frameworks/unrar
     /Library/Frameworks/unrar
     /usr/local/include/unrar
@@ -16,12 +18,13 @@ FIND_PATH(LIBUNRAR_INCLUDE_DIR dll.hpp
     /opt/csw/include/unrar # Blastwave
     /opt/include/unrar
     /usr/freeware/include/unrar
+    PATH_SUFFIXES unrar
 )
 
 FIND_LIBRARY(LIBUNRAR_LIBRARY 
     NAMES libunrar unrar
     PATHS
-    $ENV{LIBUNRAR_DIR}
+    $ENV{LIBUNRAR_DIR}/
     ~/Library/Frameworks
     /Library/Frameworks
     /usr/local/lib
@@ -36,4 +39,7 @@ FIND_LIBRARY(LIBUNRAR_LIBRARY
 SET(LIBUNRAR_FOUND "NO")
 IF(LIBUNRAR_LIBRARY AND LIBUNRAR_INCLUDE_DIR)
 	SET(LIBUNRAR_FOUND "YES")
+    MESSAGE(STATUS "Found libunrar")
+    MESSAGE(STATUS "\theaders: ${LIBUNRAR_INCLUDE_DIR}")
+    MESSAGE(STATUS "\tlibrary: ${LIBUNRAR_LIBRARY}")
 ENDIF(LIBUNRAR_LIBRARY AND LIBUNRAR_INCLUDE_DIR)
