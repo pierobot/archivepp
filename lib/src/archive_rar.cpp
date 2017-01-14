@@ -82,10 +82,10 @@ namespace archivepp
 
         struct cb_context
         {
-			std::string buffer;
+            std::string buffer;
             secure_string password;
 
-            cb_context() = default;
+            cb_context() : buffer(), password() {}
             ~cb_context() {}
         };
 

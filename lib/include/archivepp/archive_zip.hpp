@@ -31,7 +31,11 @@ namespace archivepp
          */
         archive_zip(archivepp::string path, secure_string password, std::error_code & ec);
 
+        archive_zip(archive_zip const &) = delete;
+
         virtual ~archive_zip();
+
+        archive_zip & operator=(archive_zip const &) = delete;
 
         virtual int64_t get_number_of_entries() const override;
 

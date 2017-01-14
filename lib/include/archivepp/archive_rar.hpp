@@ -13,7 +13,11 @@ namespace archivepp
         archive_rar(archivepp::string path, std::error_code & ec);
         archive_rar(archivepp::string path, secure_string password, std::error_code & ec);
 
+        archive_rar(archive_rar const&) = delete;
+
         virtual ~archive_rar();
+
+        archive_rar & operator=(archive_rar const&) = delete;
 
         virtual int64_t get_number_of_entries() const override;
 
