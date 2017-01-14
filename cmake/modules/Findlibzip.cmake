@@ -1,53 +1,44 @@
-# Locate libzip
-# This module defines
+# This module finds libzip and defines the following variables
+# LIBZIP_FOUND
 # LIBZIP_LIBRARY
-# LIBZIP_FOUND, if false, do not try to link to libzip 
-# LIBZIP_INCLUDE_DIR, where to find the headers
-#
+# LIBZIP_INCLUDE_DIRS
+# LIBZIP_VERSION
 
-FIND_PATH(LIBZIP_INCLUDE_DIR zip.h zconf.h
-    $ENV{LIBZIP_DIR}/include
-    $ENV{LIBZIP_DIR}/lib/libzip/include
-    $ENV{LIBZIP_DIR}
-    $ENV{OSGDIR}/include
-    $ENV{OSGDIR}
-    $ENV{OSG_ROOT}/include
-    ~/Library/Frameworks
-    /Library/Frameworks
-    /usr/local/include
-    /usr/include
-    /sw/include # Fink
-    /opt/local/include # DarwinPorts
-    /opt/csw/include # Blastwave
-    /opt/include
-    [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]/include
-    /usr/freeware/include
+find_path(LIBZIP_INCLUDE_DIR
+    NAMES
+        zip.h
+    HINTS
+        $ENV{ProgramFiles}/libzip
+    PATH_SUFFIXES
+        include
 )
 
-FIND_LIBRARY(LIBZIP_LIBRARY 
-    NAMES libzip zip
-    PATHS
-    $ENV{LIBZIP_DIR}/lib
-    $ENV{LIBZIP_DIR}
-    $ENV{OSGDIR}/lib
-    $ENV{OSGDIR}
-    $ENV{OSG_ROOT}/lib
-    ~/Library/Frameworks
-    /Library/Frameworks
-    /usr/local/lib
-    /usr/lib
-    /sw/lib
-    /opt/local/lib
-    /opt/csw/lib
-    /opt/lib
-    [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]/lib
-    /usr/freeware/lib64
+find_path(LIBZIP_ZIPCONF_INCLUDE_DIR
+    NAMES
+        zipconf.h
+    HINTS
+        $ENV{ProgramFiles}/libzip
+    PATH_SUFFIXES
+        lib/libzip/include
 )
 
-SET(LIBZIP_FOUND "NO")
-IF(LIBZIP_LIBRARY AND LIBZIP_INCLUDE_DIR)
-    SET(LIBZIP_FOUND "YES")
-    MESSAGE(STATUS "Found libzip")
-    MESSAGE(STATUS "\theaders: ${LIBZIP_INCLUDE_DIR}")
-    MESSAGE(STATUS "\tlibrary: ${LIBZIP_LIBRARY}")
-ENDIF(LIBZIP_LIBRARY AND LIBZIP_INCLUDE_DIR)
+find_library(LIBZIP_LIBRARY
+    NAMES
+        zip
+    HINTS
+        $ENV{ProgramFiles}/libzip/lib
+)
+
+set(LIBZIP_VERSION 0)
+# Read zipconf.h and get version string
+# I don't know regex so.... yea.
+
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(
+    LIBZIP
+    REQUIRED_VARS LIBZIP_LIBRARY LIBZIP_INCLUDE_DIR LIBZIP_ZIPCONF_INCLUDE_DIR
+#    VERSION_VAR LIBZIP_VERSION
+)
+
+#set(LIBZIP_VERSION ${LIBZIP_VERSION} CACHE STRING "Version of libzip")
+set(LIBZIP_INCLUDE_DIRS ${LIBZIP_INCLUDE_DIR} ${LIBZIP_ZIPCONF_INCLUDE_DIR})

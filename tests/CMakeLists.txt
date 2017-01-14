@@ -18,12 +18,16 @@ find_package(ZLIB REQUIRED)
 if (ZLIB_FOUND)
     target_include_directories(zip_tests PUBLIC ${ZLIB_INCLUDE_DIRS})
     target_link_libraries(zip_tests ${ZLIB_LIBRARIES})
+else ()
+    message(FATAL_ERROR "Could not find zlib.")
 endif ()
 
 find_package(libzip REQUIRED)
 if (LIBZIP_FOUND)
-    target_include_directories(zip_tests PUBLIC ${LIBZIP_INCLUDE_DIR})
+    target_include_directories(zip_tests PUBLIC ${LIBZIP_INCLUDE_DIRS})
     target_link_libraries(zip_tests ${LIBZIP_LIBRARY})
+else ()
+    message(FATAL_ERROR "Could not find libzip.")
 endif ()
 
 # --- RAR ---
@@ -34,6 +38,8 @@ find_package(libunrar REQUIRED)
 if (LIBUNRAR_FOUND)
     target_include_directories(rar_tests PUBLIC ${LIBUNRAR_INCLUDE_DIR})
     target_link_libraries(rar_tests ${LIBUNRAR_LIBRARY})
+else ()
+    message(FATAL_ERROR "Could not find libunrar")
 endif ()
 
 # --- Miscellaneous ---

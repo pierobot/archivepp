@@ -1,0 +1,84 @@
+image:
+    - Visual Studio 2015 # this image has 2013 installed as well
+clone_folder: c:/github/archivepp
+configuration:
+    - Release
+environment:
+    matrix:
+        - MSVC_ARCH: "x86_amd64"
+          MSVC_TOOLSET: "v140"
+          MSVC_VER: 2015
+          MSVC_DIR: "%ProgramFiles(x86)%/Microsoft Visual Studio 14.0/VC"
+          MSVC_GEN: "Visual Studio 14 2015 Win64"
+          ZLIB_ROOT: "%ProgramFiles%/zlib"
+          LIBZIP_DIR: "%ProgramFiles%/libzip"
+          LIBUNRAR_NAME: "unrardll64"
+          LIBUNRAR_DIR: "%ProgramFiles%/unrar"
+
+#        - MSVC_ARCH: "x86_amd64"
+#          MSVC_TOOLSET: "v120"
+#          MSVC_VER: 2013
+#          MSVC_DIR: "%ProgramFiles(x86)%/Microsoft Visual Studio 12.0/VC"
+#          MSVC_GEN: "Visual Studio 12 2013 Win64"
+#          ZLIB_ROOT: "%ProgramFiles(x86)%/zlib"
+#          LIBZIP_DIR: "%ProgramFiles(x86)%/libzip"
+#          LIBUNRAR_NAME: "unrardll32"
+#          LIBUNRAR_DIR: "%ProgramFiles(x86)%/unrar"
+install:
+#   Install the latest CMake x64
+    - curl -L -o cmake.msi https://cmake.org/files/v3.7/cmake-3.7.2-win64-x64.msi
+    - msiexec /i cmake.msi /qn ADD_CMAKE_TO_PATH=1
+#   The above installation doesn't seem to alter PATH
+    - set PATH=%ProgramFiles%\CMake\bin;%PATH%
+    - cmake --version
+before_build:
+    - git submodule update --init --recursive
+    - mkdir dependencies
+    - cd dependencies
+#   Install zlib
+    - curl -L -o zlib.tar.gz http://zlib.net/zlib-1.2.10.tar.gz
+    - 7z x zlib.tar.gz
+    - 7z x zlib-1.2.10.tar
+    - cd zlib-1.2.10
+    - mkdir build
+    - cd build
+    - cmake -G "%MSVC_GEN%" ..
+    - cmake --build . --target INSTALL --config %CONFIGURATION%
+    - cd ../..
+#   Install libzip
+    - curl -L -o libzip.tar.gz https://nih.at/libzip/libzip-1.1.3.tar.gz
+    - 7z x libzip.tar.gz
+    - 7z x libzip.tar
+    - cd libzip-1.1.3
+    - mkdir build
+    - cd build
+    - cmake -G "%MSVC_GEN%" ..
+    - cmake --build . --target INSTALL --config %CONFIGURATION%
+    - cd ../..
+#   Install unrar
+    - curl -L -o unrar.tar.gz http://www.rarlab.com/rar/unrarsrc-5.4.5.tar.gz
+    - 7z x unrar.tar.gz
+    - 7z x unrarsrc-5.4.5.tar
+    - cd unrar
+    - call "%MSVC_DIR%/vcvarsall.bat" %MSVC_ARCH%
+    - msbuild UnRARDll.vcxproj /p:PlatformToolset=%MSVC_TOOLSET% /p:Configuration=%CONFIGURATION%
+    - mkdir "%LIBUNRAR_DIR%"
+    - mkdir "%LIBUNRAR_DIR%/include"
+    - mkdir "%LIBUNRAR_DIR%/include/unrar"
+    - xcopy dll.hpp "%LIBUNRAR_DIR%/include/unrar"
+    - xcopy "build\%LIBUNRAR_NAME%\%CONFIGURATION%\*" "%LIBUNRAR_DIR%"
+    - cd ../..
+build_script:
+#   Build archivepp and tests
+    - mkdir build
+    - cd build
+    - cmake -G "%MSVC_GEN%" -DENABLE_COVERAGE=OFF ..
+    - cmake --build . --target ALL_BUILD --config %CONFIGURATION%
+    - copy "%ZLIB_ROOT%\bin\zlib.dll" tests
+    - copy "%LIBZIP_DIR%\bin\zip.dll" tests
+    - copy "%LIBUNRAR_DIR%\unrar.dll" tests
+test_script:
+    - ctest -V
+
+on_failure:
+    - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
