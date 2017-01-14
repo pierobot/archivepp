@@ -77,7 +77,7 @@ namespace archivepp
         {
 			zip_file_t * zfile = password.empty() == true ? ::zip_fopen_index(zip, index, 0) :
 #ifdef ARCHIVEPP_USE_WSTRING
-															::zip_fopen_index_encrypted(zip, index, 0, to_utf8(password).c_str());
+                                                            ::zip_fopen_index_encrypted(zip, index, 0, to_utf8(password).c_str());
 #else
                                                             ::zip_fopen_index_encrypted(zip, index, 0, password.c_str());
 #endif
@@ -91,9 +91,9 @@ namespace archivepp
         {
             zip_file_t * zfile = password.empty() == true ? ::zip_fopen(zip, name.c_str(), 0) :
 #ifdef ARCHIVEPP_USE_WSTRING
-															::zip_fopen_encrypted(zip, name.c_str(), 0, to_utf8(password).c_str());
+                                                            ::zip_fopen_encrypted(zip, name.c_str(), 0, to_utf8(password).c_str());
 #else
-															::zip_fopen_encrypted(zip, name.c_str(), 0, password.c_str());
+                                                            ::zip_fopen_encrypted(zip, name.c_str(), 0, password.c_str());
 #endif
             ec = zfile == nullptr ? get_last_error(zip) : std::error_code();
             

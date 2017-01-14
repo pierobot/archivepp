@@ -27,7 +27,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
 add_library(archivepp STATIC
+    ${CURRENT_DIR}/src/archive.cpp
     ${CURRENT_DIR}/include/archivepp/archive.hpp
+
     ${CURRENT_DIR}/include/archivepp/basic_archive.hpp
 
     ${CURRENT_DIR}/src/archive_zip.cpp
@@ -47,6 +49,9 @@ add_library(archivepp STATIC
 
     ${CURRENT_DIR}/src/secure_allocator.cpp
     ${CURRENT_DIR}/include/archivepp/secure_allocator.hpp
+
+    ${CURRENT_DIR}/src/extensions.cpp
+    ${CURRENT_DIR}/include/archivepp/extensions.hpp
 )
 
 find_package(ZLIB REQUIRED)

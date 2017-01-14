@@ -13,9 +13,6 @@ namespace archivepp
 
         while (remaining > 0)
         {
-            if (remaining < 1)
-                break;
-
             *chunk++ = 0;
             --remaining;
         }
