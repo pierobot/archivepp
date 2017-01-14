@@ -7,7 +7,7 @@ include(CTest)
 include(CheckCXXCompilerFlag)
 
 if (NOT WIN32)
-	include(CodeCoverage)
+    include(CodeCoverage)
 endif ()
 
 option(ENABLE_COVERAGE "Enables coverage report for the library.")
@@ -21,7 +21,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
     # Microsoft Visual Studio
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     # G++
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wpedantic")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wpedantic -Weffc++ -Wnon-virtual-dtor")
 endif ()
 
 add_subdirectory(lib)
