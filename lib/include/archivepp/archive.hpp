@@ -1,18 +1,24 @@
 #pragma once
 
+#include <archivepp/archive_entry.hpp>
+#include <archivepp/string.hpp>
+
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <system_error>
 #include <vector>
-
-#include <archivepp/archive_entry.hpp>
-#include <archivepp/string.hpp>
 
 namespace archivepp
 {
     class archive
     {
     public:
+        /**
+         * A smart pointer that contains the interface to an archive.
+         */
+        typedef std::unique_ptr<archive> archive_pointer;
+
         /**
          * A smart pointer that contains the interface to an archive entry.
          */
@@ -92,6 +98,10 @@ namespace archivepp
          * @param filter_fn The unary function to be called to determine whether to exclude an entry or not.
          */
         virtual std::vector<entry_pointer> get_entries(filter_function filter_fn) const = 0;
+
+        static archive_pointer open(archivepp::string path, std::error_code & ec);
+
+        static archive_pointer open(archivepp::string path, archivepp::secure_string password, std::error_code & ec);
     protected:
         /**
          * Gets the password of the archive.
