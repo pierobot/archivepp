@@ -20,7 +20,7 @@ coverage:
 parsers:
     gcov:
         branch_detection:
-            conditional: true
-            loop: true
+            conditional: false
+            loop: false
             macro: false
             method: false
