@@ -10,5 +10,6 @@ Windows|MSVC 2015|[![Build status](https://ci.appveyor.com/api/projects/status/x
 * rar
 
 ###Requirements:
+* zlib: http://zlib.net/
 * libzip: https://nih.at/libzip/
 * unrar: http://www.rarlab.com/rar_add.htm (UnRAR source)
