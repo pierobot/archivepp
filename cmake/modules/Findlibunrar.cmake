@@ -1,45 +1,43 @@
-# Locate unrar
-# This module defines
+# This module finds libunrar and defines the following variables
+# LIBUNRAR_FOUND
 # LIBUNRAR_LIBRARY
-# LIBUNRAR_FOUND, if false, do not try to link to libzip 
-# LIBUNRAR_INCLUDE_DIR, where to find the headers
-#
+# LIBUNRAR_INCLUDE_DIR
+# LIBUNRAR_VERSION
 
-FIND_PATH(LIBUNRAR_INCLUDE_DIR
-    NAMES unrar/dll.hpp dll.hpp
-    PATHS
-    $ENV{LIBUNRAR_DIR}/include
-    ~/Library/Frameworks/unrar
-    /Library/Frameworks/unrar
-    /usr/local/include/unrar
-    /usr/include/unrar
-    /sw/include/unrar # Fink
-    /opt/local/include/unrar # DarwinPorts
-    /opt/csw/include/unrar # Blastwave
-    /opt/include/unrar
-    /usr/freeware/include/unrar
-    PATH_SUFFIXES unrar
+find_path(LIBUNRAR_INCLUDE_DIR
+    NAMES
+        unrar/dll.hpp
+    HINTS
+        $ENV{ProgramFiles}/unrar
+    PATH_SUFFIXES
+        include
 )
 
-FIND_LIBRARY(LIBUNRAR_LIBRARY 
-    NAMES libunrar unrar
-    PATHS
-    $ENV{LIBUNRAR_DIR}/
-    ~/Library/Frameworks
-    /Library/Frameworks
-    /usr/local/lib
-    /usr/lib
-    /sw/lib
-    /opt/local/lib
-    /opt/csw/lib
-    /opt/lib
-    /usr/freeware/lib64
+find_path(LIBUNRAR_VERSION_INCLUDE_DIR
+    NAMES
+        unrar/version.hpp
+    HINTS
+        $ENV{ProgramFiles}/unrar
+    PATH_SUFFIXES
+        include
 )
 
-SET(LIBUNRAR_FOUND "NO")
-IF(LIBUNRAR_LIBRARY AND LIBUNRAR_INCLUDE_DIR)
-	SET(LIBUNRAR_FOUND "YES")
-    MESSAGE(STATUS "Found libunrar")
-    MESSAGE(STATUS "\theaders: ${LIBUNRAR_INCLUDE_DIR}")
-    MESSAGE(STATUS "\tlibrary: ${LIBUNRAR_LIBRARY}")
-ENDIF(LIBUNRAR_LIBRARY AND LIBUNRAR_INCLUDE_DIR)
+find_library(LIBUNRAR_LIBRARY 
+    NAMES
+        unrar
+    HINTS
+        $ENV{ProgramFiles}/unrar
+)
+
+set(LIBUNRAR_VERSION 0)
+# Read unrar/version.h and get version string
+# I don't know regex so.... yea.
+
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(
+    LIBUNRAR
+    REQUIRED_VARS LIBUNRAR_LIBRARY LIBUNRAR_INCLUDE_DIR
+#    VERSION_VAR LIBUNRAR_VERSION
+)
+
+set(LIBUNRAR_VERSION ${LIBUNRAR_VERSION} CACHE STRING "Version of libunrar")
