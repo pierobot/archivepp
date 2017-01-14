@@ -14,6 +14,5 @@ namespace archivepp
         virtual ~archive_entry_zip();
     protected:
     private:
-        zip_stat_t m_zip_stat;
     };
 }
