@@ -9,6 +9,36 @@ Windows|MSVC 2015|[![Build status](https://ci.appveyor.com/api/projects/status/x
 * zip
 * rar
 
+###Features
+- One function to open any of the supported archive formats. (see below for example)
+- Not restricted to zip and rar extensions.
+    - Whitelist for linking extensions to formats.
+    - Accepts files without an extension. If no extension is found, it will scan for known archive signatures.
+- Unicode support for paths, filenames, and passwords on Windows.
+
+###Example usage
+```cpp
+#include <archivepp/archive.hpp>
+
+int main()
+{
+    archivepp::string path = ARCHIVEPP_STR("~/random/path/archive.zip");
+    std::error_code error;
+    auto archive_ptr = archivepp::archive::open(path, error);
+    if (!archive_ptr || error)
+        return 1;
+
+    // Get contents by name
+    contents = archive_ptr->get_contents(ARCHIVEPP_STR("archive/file"), error);
+    if (error)
+        return 1;
+
+    // Do something with contents
+
+    return 0;
+}
+```
+
 ###Requirements:
 * zlib: http://zlib.net/
 * libzip: https://nih.at/libzip/
