@@ -36,10 +36,10 @@ before_build:
     - mkdir dependencies
     - cd dependencies
 #   Install zlib
-    - curl -L -o zlib.tar.gz http://zlib.net/zlib-1.2.10.tar.gz
+    - curl -L -o zlib.tar.gz http://zlib.net/zlib-1.2.11.tar.gz
     - 7z x zlib.tar.gz
-    - 7z x zlib-1.2.10.tar
-    - cd zlib-1.2.10
+    - 7z x zlib-1.2.11.tar
+    - cd zlib-1.2.11
     - mkdir build
     - cd build
     - cmake -G "%MSVC_GEN%" ..
