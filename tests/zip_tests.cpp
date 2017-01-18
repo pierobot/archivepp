@@ -1,8 +1,9 @@
 #define _ITERATOR_DEBUG_LEVEL 0
 #include <doctest/doctest.h>
 
-#include <archivepp/archive_zip.hpp>
+#include <archivepp/archive.hpp>
 #include <archivepp/secure_allocator.hpp>
+#include <archivepp/except.hpp>
 
 #include <cstring>
 
