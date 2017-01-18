@@ -22,6 +22,9 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     # G++
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wpedantic -Weffc++ -Wnon-virtual-dtor")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    # Clang
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wc++11-extensions -pedantic")
 endif ()
 
 add_subdirectory(lib)

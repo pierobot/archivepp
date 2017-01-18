@@ -2,9 +2,7 @@
 #include <doctest/doctest.h>
 
 #include <archivepp/archive.hpp>
-#include <archivepp/archive_rar.hpp>
-
-#include <iostream>
+#include <archivepp/except.hpp>
 
 static archivepp::string nonexistent_path = ARCHIVEPP_STR("../../doesnotexist");
 static archivepp::string archive_path = ARCHIVEPP_STR("../../tests/rar/archive.rar");

@@ -49,7 +49,7 @@ namespace archivepp
          */
         virtual std::string get_contents(entry_pointer const & entry, std::error_code & ec) const = 0;
 
-                /**
+        /**
          * Gets the contents of an entry in the archive.
          *
          * @param entry A smart pointer to an archive entry.
