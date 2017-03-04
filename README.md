@@ -29,7 +29,7 @@ int main()
         return 1;
 
     // Get contents by name
-    contents = archive_ptr->get_contents(ARCHIVEPP_STR("archive/file"), error);
+    auto contents = archive_ptr->get_contents(ARCHIVEPP_STR("archive/file"), error);
     if (error)
         return 1;
 
